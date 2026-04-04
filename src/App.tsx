@@ -1,33 +1,56 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import DashboardPage from "./pages/DashboardPage";
 import CaixaPage from "./pages/CaixaPage";
 import ContatosPage from "./pages/ContatosPage";
 import LeadsPage from "./pages/LeadsPage";
 import TarefasPage from "./pages/TarefasPage";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AuthRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
+  if (user) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/login" element={<AuthRoute><AuthPage /></AuthRoute>} />
+    <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+    <Route path="/caixa" element={<ProtectedRoute><CaixaPage /></ProtectedRoute>} />
+    <Route path="/contatos" element={<ProtectedRoute><ContatosPage /></ProtectedRoute>} />
+    <Route path="/leads" element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
+    <Route path="/tarefas" element={<ProtectedRoute><TarefasPage /></ProtectedRoute>} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/caixa" element={<CaixaPage />} />
-          <Route path="/contatos" element={<ContatosPage />} />
-          <Route path="/leads" element={<LeadsPage />} />
-          <Route path="/tarefas" element={<TarefasPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

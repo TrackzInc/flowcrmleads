@@ -14,7 +14,234 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          interest: string | null
+          is_lead: boolean | null
+          name: string
+          next_contact_date: string | null
+          notes: string | null
+          origin: string | null
+          phone: string | null
+          potential_value: number | null
+          stage: string | null
+          status: string
+          tag: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          interest?: string | null
+          is_lead?: boolean | null
+          name: string
+          next_contact_date?: string | null
+          notes?: string | null
+          origin?: string | null
+          phone?: string | null
+          potential_value?: number | null
+          stage?: string | null
+          status?: string
+          tag?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          interest?: string | null
+          is_lead?: boolean | null
+          name?: string
+          next_contact_date?: string | null
+          notes?: string | null
+          origin?: string | null
+          phone?: string | null
+          potential_value?: number | null
+          stage?: string | null
+          status?: string
+          tag?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      interactions: {
+        Row: {
+          contact_id: string
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          name: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          done: boolean | null
+          due_date: string | null
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          done?: boolean | null
+          due_date?: string | null
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          done?: boolean | null
+          due_date?: string | null
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string
+          contact_id: string | null
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          contact_id?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          contact_id?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
