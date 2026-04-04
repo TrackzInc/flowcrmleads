@@ -8,12 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useContacts, useTransactions, useInteractions, useTemplates } from '@/hooks/useStore';
-import { Contact, ContactStatus, CONTACT_STATUS_LABELS, ORIGINS } from '@/types';
-import { formatCurrency, formatDate, generateId, whatsappLink, isOverdue } from '@/lib/helpers';
+import { useContacts, useTransactions, useInteractions, useTemplates, useInsertContact, useInsertInteraction } from '@/hooks/useStore';
+import { ContactStatus, CONTACT_STATUS_LABELS, ORIGINS } from '@/types';
+import { formatCurrency, formatDate, whatsappLink, isOverdue } from '@/lib/helpers';
 import { Plus, Search, MessageCircle, Phone, Mail, ChevronRight, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 
-const statusColors: Record<ContactStatus, string> = {
+const statusColors: Record<string, string> = {
   novo: 'status-novo',
   em_contato: 'status-contato',
   negociacao: 'status-negociacao',
@@ -22,10 +23,13 @@ const statusColors: Record<ContactStatus, string> = {
 };
 
 export default function ContatosPage() {
-  const [contacts, setContacts] = useContacts();
-  const [transactions] = useTransactions();
-  const [interactions, setInteractions] = useInteractions();
-  const [templates] = useTemplates();
+  const { data: contacts = [] } = useContacts();
+  const { data: transactions = [] } = useTransactions();
+  const { data: allInteractions = [] } = useInteractions();
+  const { data: templates = [] } = useTemplates();
+  const insertContact = useInsertContact();
+  const insertInteraction = useInsertInteraction();
+
   const [open, setOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -38,33 +42,37 @@ export default function ContatosPage() {
 
   const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', status: 'novo', notes: '', nextContactDate: '' });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name) return;
-    const contact: Contact = {
-      id: generateId(), ...form, createdAt: new Date().toISOString(),
-    };
-    setContacts(prev => [contact, ...prev]);
-    setOpen(false);
-    resetForm();
+    try {
+      await insertContact.mutateAsync({
+        name: form.name, phone: form.phone, email: form.email, origin: form.origin,
+        status: form.status, notes: form.notes, next_contact_date: form.nextContactDate || null,
+      });
+      setOpen(false);
+      resetForm();
+    } catch { toast.error('Erro ao salvar contato'); }
   };
 
   const filtered = useMemo(() => {
     return contacts
-      .filter(c => !c.isLead)
+      .filter(c => !c.is_lead)
       .filter(c => filterStatus === 'all' || c.status === filterStatus)
       .filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
   }, [contacts, filterStatus, search]);
 
   const detail = detailId ? contacts.find(c => c.id === detailId) : null;
-  const detailTx = detail ? transactions.filter(t => t.contactId === detail.id) : [];
+  const detailTx = detail ? transactions.filter(t => t.contact_id === detail.id) : [];
   const detailRevenue = detailTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const detailInteractions = detail ? interactions.filter(i => i.contactId === detail.id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
+  const detailInteractions = detail ? allInteractions.filter(i => i.contact_id === detail.id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
 
   const [interactionNote, setInteractionNote] = useState('');
-  const addInteraction = () => {
+  const addInteraction = async () => {
     if (!detail || !interactionNote) return;
-    setInteractions(prev => [...prev, { id: generateId(), contactId: detail.id, date: new Date().toISOString(), type: 'nota', note: interactionNote }]);
-    setInteractionNote('');
+    try {
+      await insertInteraction.mutateAsync({ contact_id: detail.id, type: 'nota', note: interactionNote });
+      setInteractionNote('');
+    } catch { toast.error('Erro ao salvar interação'); }
   };
 
   if (detail) {
@@ -75,22 +83,24 @@ export default function ContatosPage() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold">{detail.name}</h1>
-              <Badge className={statusColors[detail.status]}>{CONTACT_STATUS_LABELS[detail.status]}</Badge>
+              <Badge className={statusColors[detail.status] || ''}>{CONTACT_STATUS_LABELS[detail.status as ContactStatus] || detail.status}</Badge>
             </div>
-            <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => window.open(whatsappLink(detail.phone), '_blank')}>
-              <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
-            </Button>
+            {detail.phone && (
+              <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => window.open(whatsappLink(detail.phone || ''), '_blank')}>
+                <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
+              </Button>
+            )}
           </div>
 
           <Card>
             <CardContent className="pt-4 space-y-2 text-sm">
-              <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {detail.phone}</div>
+              {detail.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {detail.phone}</div>}
               {detail.email && <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {detail.email}</div>}
-              <div>Origem: {detail.origin}</div>
-              {detail.nextContactDate && (
-                <div className={`flex items-center gap-1 ${isOverdue(detail.nextContactDate) ? 'text-destructive font-medium' : ''}`}>
-                  {isOverdue(detail.nextContactDate) && <AlertTriangle className="h-3 w-3" />}
-                  Próximo contato: {formatDate(detail.nextContactDate)}
+              {detail.origin && <div>Origem: {detail.origin}</div>}
+              {detail.next_contact_date && (
+                <div className={`flex items-center gap-1 ${isOverdue(detail.next_contact_date) ? 'text-destructive font-medium' : ''}`}>
+                  {isOverdue(detail.next_contact_date) && <AlertTriangle className="h-3 w-3" />}
+                  Próximo contato: {formatDate(detail.next_contact_date)}
                 </div>
               )}
               {detail.notes && <div className="pt-2 border-t"><p className="text-muted-foreground">{detail.notes}</p></div>}
@@ -119,7 +129,7 @@ export default function ContatosPage() {
               <p className="text-sm font-medium">Histórico de Interações</p>
               <div className="flex gap-2">
                 <Input value={interactionNote} onChange={e => setInteractionNote(e.target.value)} placeholder="Adicionar nota..." className="flex-1" />
-                <Button size="sm" onClick={addInteraction}>Adicionar</Button>
+                <Button size="sm" onClick={addInteraction} disabled={insertInteraction.isPending}>Adicionar</Button>
               </div>
               {detailInteractions.map(i => (
                 <div key={i.id} className="text-sm p-2 rounded bg-muted">
@@ -147,7 +157,7 @@ export default function ContatosPage() {
               <DialogHeader><DialogTitle>Novo Contato</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>Nome *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-                <div><Label>Telefone</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+5511999999999" /></div>
+                <div><Label>Telefone</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="11999999999" /></div>
                 <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
                 <div>
                   <Label>Origem</Label>
@@ -165,7 +175,7 @@ export default function ContatosPage() {
                 </div>
                 <div><Label>Próximo Contato</Label><Input type="date" value={form.nextContactDate} onChange={e => setForm(f => ({ ...f, nextContactDate: e.target.value }))} /></div>
                 <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
-                <Button onClick={handleSave} className="w-full">Salvar</Button>
+                <Button onClick={handleSave} className="w-full" disabled={insertContact.isPending}>Salvar</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -188,7 +198,7 @@ export default function ContatosPage() {
         <div className="space-y-2">
           {filtered.length === 0 && <p className="text-sm text-muted-foreground py-8 text-center">Nenhum contato encontrado</p>}
           {filtered.map(c => {
-            const revenue = transactions.filter(t => t.contactId === c.id && t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const revenue = transactions.filter(t => t.contact_id === c.id && t.type === 'income').reduce((s, t) => s + t.amount, 0);
             return (
               <Card key={c.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setDetailId(c.id)}>
                 <CardContent className="py-3 px-4 flex items-center justify-between">
@@ -199,14 +209,14 @@ export default function ContatosPage() {
                     <div>
                       <p className="text-sm font-medium">{c.name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${statusColors[c.status]}`}>{CONTACT_STATUS_LABELS[c.status]}</Badge>
+                        <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${statusColors[c.status] || ''}`}>{CONTACT_STATUS_LABELS[c.status as ContactStatus] || c.status}</Badge>
                         {c.origin && <span>{c.origin}</span>}
                         {revenue > 0 && <span className="text-success font-medium">{formatCurrency(revenue)}</span>}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    {c.nextContactDate && isOverdue(c.nextContactDate) && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                    {c.next_contact_date && isOverdue(c.next_contact_date) && <AlertTriangle className="h-4 w-4 text-destructive" />}
                     {c.phone && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={e => { e.stopPropagation(); setWhatsappOpen(c.id); }}>
                         <MessageCircle className="h-4 w-4 text-success" />
@@ -227,15 +237,12 @@ export default function ContatosPage() {
               {templates.map(t => {
                 const contact = whatsappOpen ? contacts.find(c => c.id === whatsappOpen) : null;
                 return (
-                  <Button key={t.id} variant="outline" className="w-full text-left justify-start h-auto py-3" onClick={() => { if (contact) window.open(whatsappLink(contact.phone, t.content), '_blank'); setWhatsappOpen(null); }}>
-                    <div>
-                      <p className="font-medium text-sm">{t.name}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{t.content}</p>
-                    </div>
+                  <Button key={t.id} variant="outline" className="w-full text-left justify-start h-auto py-3" onClick={() => { if (contact) window.open(whatsappLink(contact.phone || '', t.content), '_blank'); setWhatsappOpen(null); }}>
+                    <div><p className="font-medium text-sm">{t.name}</p><p className="text-xs text-muted-foreground line-clamp-1">{t.content}</p></div>
                   </Button>
                 );
               })}
-              <Button variant="outline" className="w-full" onClick={() => { const c = whatsappOpen ? contacts.find(ct => ct.id === whatsappOpen) : null; if (c) window.open(whatsappLink(c.phone), '_blank'); setWhatsappOpen(null); }}>
+              <Button variant="outline" className="w-full" onClick={() => { const c = whatsappOpen ? contacts.find(ct => ct.id === whatsappOpen) : null; if (c) window.open(whatsappLink(c.phone || ''), '_blank'); setWhatsappOpen(null); }}>
                 Abrir sem mensagem
               </Button>
             </div>
