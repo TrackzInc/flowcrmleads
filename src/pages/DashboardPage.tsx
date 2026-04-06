@@ -3,8 +3,12 @@ import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTransactions, useContacts, useTasks } from '@/hooks/useStore';
 import { formatCurrency, isOverdue, formatDate } from '@/lib/helpers';
-import { TrendingUp, TrendingDown, Wallet, Users, AlertTriangle, CheckSquare, Target, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Target, CheckSquare, DollarSign, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
+import { ActionOfTheDay } from '@/components/dashboard/ActionOfTheDay';
+import { WeeklyProgress } from '@/components/dashboard/WeeklyProgress';
+import { TopOportunidades } from '@/components/dashboard/TopOportunidades';
+import { PipelineAnalytics } from '@/components/dashboard/PipelineAnalytics';
 
 const STATUS_COLORS = ['#3b82f6', '#f59e0b', '#eab308', '#10b981', '#ef4444'];
 
@@ -30,6 +34,7 @@ export default function DashboardPage() {
   }, [transactions, currentMonth, currentYear]);
 
   const leads = useMemo(() => contacts.filter(c => c.is_lead), [contacts]);
+  const overdueLeadsCount = useMemo(() => leads.filter(l => l.next_contact_date && isOverdue(l.next_contact_date)).length, [leads]);
 
   const leadStats = useMemo(() => {
     const total = leads.length;
@@ -79,7 +84,21 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          {overdueLeadsCount > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-sm font-medium">
+              <AlertTriangle className="h-4 w-4" />
+              Você tem {overdueLeadsCount} lead(s) atrasado(s)
+            </div>
+          )}
+        </div>
+
+        {/* Action of the Day */}
+        <ActionOfTheDay />
+
+        {/* Weekly Progress */}
+        <WeeklyProgress />
 
         {/* Financial KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -145,6 +164,9 @@ export default function DashboardPage() {
           </Card>
         </div>
 
+        {/* Pipeline Analytics */}
+        <PipelineAnalytics />
+
         <div className="grid md:grid-cols-3 gap-6">
           {/* Cash flow chart */}
           <Card className="md:col-span-2">
@@ -187,7 +209,7 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Leads by stage + Potential vs Closed */}
+        {/* Leads by stage + Top opportunities */}
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-base">Leads por Etapa</CardTitle></CardHeader>
@@ -208,28 +230,34 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><DollarSign className="h-4 w-4" /> Potencial vs Realizado</CardTitle></CardHeader>
-            <CardContent>
-              <div className="h-64 flex flex-col items-center justify-center space-y-6">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Valor Potencial Total</p>
-                  <p className="text-3xl font-bold text-primary">{formatCurrency(leadStats.totalPotential)}</p>
-                </div>
+
+          <TopOportunidades />
+        </div>
+
+        {/* Potential vs Realized */}
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><DollarSign className="h-4 w-4" /> Potencial vs Realizado</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-8">
+              <div className="text-center flex-1">
+                <p className="text-xs text-muted-foreground mb-1">Valor Potencial Total</p>
+                <p className="text-3xl font-bold text-primary">{formatCurrency(leadStats.totalPotential)}</p>
+              </div>
+              <div className="flex-1">
                 <div className="w-full bg-muted rounded-full h-4 overflow-hidden">
                   <div
                     className="bg-success h-full rounded-full transition-all"
                     style={{ width: `${leadStats.totalPotential > 0 ? Math.min((leadStats.totalClosed / leadStats.totalPotential) * 100, 100) : 0}%` }}
                   />
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Valor Realizado (Fechado)</p>
-                  <p className="text-3xl font-bold text-success">{formatCurrency(leadStats.totalClosed)}</p>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="text-center flex-1">
+                <p className="text-xs text-muted-foreground mb-1">Valor Realizado</p>
+                <p className="text-3xl font-bold text-success">{formatCurrency(leadStats.totalClosed)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );

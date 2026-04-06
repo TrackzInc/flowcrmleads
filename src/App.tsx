@@ -9,6 +9,7 @@ import CaixaPage from "./pages/CaixaPage";
 import ContatosPage from "./pages/ContatosPage";
 import LeadsPage from "./pages/LeadsPage";
 import TarefasPage from "./pages/TarefasPage";
+import ProspeccaoPage from "./pages/ProspeccaoPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,7 @@ const AppRoutes = () => (
     <Route path="/caixa" element={<ProtectedRoute><CaixaPage /></ProtectedRoute>} />
     <Route path="/contatos" element={<ProtectedRoute><ContatosPage /></ProtectedRoute>} />
     <Route path="/leads" element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
+    <Route path="/prospeccao" element={<ProtectedRoute><ProspeccaoPage /></ProtectedRoute>} />
     <Route path="/tarefas" element={<ProtectedRoute><TarefasPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>

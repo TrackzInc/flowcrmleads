@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useTasks, useContacts, useInsertTask, useUpdateTask, useDeleteTask, useUpdateContact } from '@/hooks/useStore';
-import { formatDate, formatCurrency, isOverdue, whatsappLink } from '@/lib/helpers';
-import { Plus, AlertTriangle, MessageCircle, Calendar } from 'lucide-react';
+import { formatDate, formatCurrency, isOverdue } from '@/lib/helpers';
+import { Plus, AlertTriangle, MessageCircle, Calendar, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { WhatsAppTemplateSelector } from '@/components/WhatsAppTemplateSelector';
 
 export default function TarefasPage() {
   const { data: tasks = [] } = useTasks();
@@ -24,12 +25,13 @@ export default function TarefasPage() {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'done'>('pending');
   const [form, setForm] = useState({ title: '', dueDate: new Date().toISOString().split('T')[0], contactId: '' });
+  const [waOpen, setWaOpen] = useState(false);
+  const [waLead, setWaLead] = useState<any>(null);
+  const [rescheduleId, setRescheduleId] = useState<string | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
 
   // Follow-up leads
-  const leadsWithFollowup = useMemo(() => {
-    return contacts.filter(c => c.is_lead && c.next_contact_date);
-  }, [contacts]);
-
+  const leadsWithFollowup = useMemo(() => contacts.filter(c => c.is_lead && c.next_contact_date), [contacts]);
   const overdueLeads = useMemo(() => leadsWithFollowup.filter(l => isOverdue(l.next_contact_date)), [leadsWithFollowup]);
   const todayLeads = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -68,10 +70,19 @@ export default function TarefasPage() {
     } catch { toast.error('Erro'); }
   };
 
-  const updateFollowupDate = async (leadId: string, date: string) => {
+  const reschedule = async (leadId: string) => {
+    if (!rescheduleDate) return;
     try {
-      await updateContact.mutateAsync({ id: leadId, next_contact_date: date || null });
-    } catch { toast.error('Erro ao atualizar data'); }
+      await updateContact.mutateAsync({ id: leadId, next_contact_date: rescheduleDate });
+      setRescheduleId(null);
+      setRescheduleDate('');
+      toast.success('Reagendado');
+    } catch { toast.error('Erro ao reagendar'); }
+  };
+
+  const openWhatsApp = (lead: any) => {
+    setWaLead(lead);
+    setWaOpen(true);
   };
 
   const filtered = useMemo(() => {
@@ -96,29 +107,38 @@ export default function TarefasPage() {
         {leads.map(l => (
           <Card key={l.id} className={color === 'text-destructive' ? 'border-destructive/30' : color === 'text-warning' ? 'border-warning/30' : ''}>
             <CardContent className="py-3 px-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{l.name}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                     <Calendar className="h-3 w-3" />
                     <span className={color}>{formatDate(l.next_contact_date!)}</span>
                     <Badge variant="secondary" className="text-[10px]">{l.stage}</Badge>
                     {(l.potential_value ?? 0) > 0 && <span className="text-primary font-medium">{formatCurrency(l.potential_value!)}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   {l.phone && (
-                    <Button variant="ghost" size="sm" className="h-7 text-xs text-success" onClick={() => window.open(whatsappLink(l.phone || ''), '_blank')}>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs text-success" onClick={() => openWhatsApp(l)}>
                       <MessageCircle className="h-3 w-3" />
                     </Button>
                   )}
                   <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => markFollowupDone(l.id)}>Feito</Button>
-                  <Input
-                    type="date"
-                    className="h-7 w-36 text-xs"
-                    defaultValue={l.next_contact_date || ''}
-                    onChange={e => updateFollowupDate(l.id, e.target.value)}
-                  />
+                  {rescheduleId === l.id ? (
+                    <div className="flex items-center gap-1">
+                      <Input
+                        type="date"
+                        className="h-7 w-36 text-xs"
+                        value={rescheduleDate}
+                        onChange={e => setRescheduleDate(e.target.value)}
+                      />
+                      <Button size="sm" className="h-7 text-xs" onClick={() => reschedule(l.id)}>OK</Button>
+                    </div>
+                  ) : (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setRescheduleId(l.id); setRescheduleDate(l.next_contact_date || ''); }}>
+                      <RefreshCw className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -195,8 +215,16 @@ export default function TarefasPage() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         {t.due_date && <span className={overdue ? 'text-destructive font-medium' : ''}>{formatDate(t.due_date)}</span>}
                         {contact && <span>· {contact.name}</span>}
+                        {contact && (contact.potential_value ?? 0) > 0 && (
+                          <span className="text-primary font-medium">{formatCurrency(contact.potential_value!)}</span>
+                        )}
                       </div>
                     </div>
+                    {contact?.phone && (
+                      <Button variant="ghost" size="sm" className="h-7 text-xs text-success" onClick={() => openWhatsApp(contact)}>
+                        <MessageCircle className="h-3 w-3" />
+                      </Button>
+                    )}
                     <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={() => remove(t.id)}>Excluir</Button>
                   </CardContent>
                 </Card>
@@ -204,6 +232,15 @@ export default function TarefasPage() {
             })}
           </div>
         </div>
+
+        {waLead && (
+          <WhatsAppTemplateSelector
+            open={waOpen}
+            onOpenChange={v => { setWaOpen(v); if (!v) setWaLead(null); }}
+            phone={waLead.phone || ''}
+            leadName={waLead.name}
+          />
+        )}
       </div>
     </AppLayout>
   );

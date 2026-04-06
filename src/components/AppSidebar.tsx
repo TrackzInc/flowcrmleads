@@ -1,8 +1,12 @@
-import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut } from 'lucide-react';
+import { useMemo } from 'react';
+import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, AlertCircle } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useContacts } from '@/hooks/useStore';
+import { isOverdue } from '@/lib/helpers';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +24,7 @@ const items = [
   { title: 'Caixa', url: '/caixa', icon: Wallet },
   { title: 'Contatos', url: '/contatos', icon: Users },
   { title: 'Leads', url: '/leads', icon: Target },
+  { title: 'Prospecção', url: '/prospeccao', icon: Crosshair },
   { title: 'Tarefas', url: '/tarefas', icon: CheckSquare },
 ];
 
@@ -28,6 +33,11 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const location = useLocation();
   const { signOut, user } = useAuth();
+  const { data: contacts = [] } = useContacts();
+
+  const overdueLeadsCount = useMemo(() => {
+    return contacts.filter(c => c.is_lead && c.next_contact_date && isOverdue(c.next_contact_date)).length;
+  }, [contacts]);
 
   return (
     <Sidebar collapsible="icon">
@@ -47,11 +57,18 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === '/'}
-                      className="hover:bg-sidebar-accent/50"
+                      className="hover:bg-sidebar-accent/50 relative"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
                       <item.icon className="mr-2 h-4 w-4 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
+                      {item.url === '/leads' && overdueLeadsCount > 0 && (
+                        <span className="ml-auto flex items-center">
+                          <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                            {overdueLeadsCount}
+                          </span>
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
