@@ -8,11 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useContacts, useInsertContact, useUpdateContact } from '@/hooks/useStore';
+import { useContacts, useInsertContact, useUpdateContact, useInteractions } from '@/hooks/useStore';
 import { LeadStage, LeadTag, LEAD_STAGE_LABELS, LEAD_TAG_LABELS, ORIGINS, CONTACT_STATUS_LABELS, ContactStatus } from '@/types';
-import { whatsappLink, formatCurrency } from '@/lib/helpers';
-import { Plus, MessageCircle, GripVertical, Pencil } from 'lucide-react';
+import { formatCurrency } from '@/lib/helpers';
+import { Plus, GripVertical, Pencil, MessageCircle, AlertCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { WhatsAppTemplateSelector } from '@/components/WhatsAppTemplateSelector';
 
 const STAGES: LeadStage[] = ['novo_lead', 'contato_iniciado', 'respondeu', 'em_negociacao', 'fechado', 'perdido'];
 
@@ -32,8 +33,17 @@ const tagColors: Record<LeadTag, string> = {
   cliente_potencial: 'bg-emerald-100 text-emerald-700',
 };
 
+function getRelativeTime(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'hoje';
+  if (days === 1) return 'há 1 dia';
+  return `há ${days} dias`;
+}
+
 export default function LeadsPage() {
   const { data: contacts = [] } = useContacts();
+  const { data: interactions = [] } = useInteractions();
   const insertContact = useInsertContact();
   const updateContact = useUpdateContact();
 
@@ -41,6 +51,8 @@ export default function LeadsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<any>(null);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [waOpen, setWaOpen] = useState(false);
+  const [waLead, setWaLead] = useState<any>(null);
 
   const [form, setForm] = useState({
     name: '', phone: '', email: '', origin: '', tag: 'frio' as LeadTag, interest: '', potential_value: '',
@@ -95,6 +107,17 @@ export default function LeadsPage() {
 
   const leads = useMemo(() => contacts.filter(c => c.is_lead), [contacts]);
 
+  // Last interaction per contact
+  const lastInteractionMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    interactions.forEach(i => {
+      if (!map[i.contact_id] || i.date > map[i.contact_id]) {
+        map[i.contact_id] = i.date;
+      }
+    });
+    return map;
+  }, [interactions]);
+
   const handleDrop = async (stage: LeadStage) => {
     if (!dragId) return;
     try {
@@ -104,6 +127,11 @@ export default function LeadsPage() {
       });
     } catch { toast.error('Erro ao mover lead'); }
     setDragId(null);
+  };
+
+  const openWhatsApp = (lead: any) => {
+    setWaLead(lead);
+    setWaOpen(true);
   };
 
   return (
@@ -149,7 +177,7 @@ export default function LeadsPage() {
             return (
               <div
                 key={stage}
-                className={`min-w-[240px] flex-shrink-0 bg-muted/50 rounded-lg border-t-4 ${stageColors[stage]}`}
+                className={`min-w-[260px] flex-shrink-0 bg-muted/50 rounded-lg border-t-4 ${stageColors[stage]}`}
                 onDragOver={e => e.preventDefault()}
                 onDrop={() => handleDrop(stage)}
               >
@@ -160,32 +188,54 @@ export default function LeadsPage() {
                   </div>
                 </div>
                 <div className="p-2 space-y-2 min-h-[100px]">
-                  {stageleads.map(lead => (
-                    <Card key={lead.id} draggable onDragStart={() => setDragId(lead.id)} className="cursor-grab active:cursor-grabbing">
-                      <CardContent className="p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium">{lead.name}</p>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); openEdit(lead); }}>
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                            <GripVertical className="h-3 w-3 text-muted-foreground" />
+                  {stageleads.map(lead => {
+                    const lastContact = lastInteractionMap[lead.id];
+                    const daysSinceContact = lastContact ? Math.floor((Date.now() - new Date(lastContact).getTime()) / 86400000) : null;
+                    const isHighValue = (lead.potential_value ?? 0) >= 5000;
+                    const isStale = daysSinceContact !== null && daysSinceContact > 7;
+
+                    return (
+                      <Card
+                        key={lead.id}
+                        draggable
+                        onDragStart={() => setDragId(lead.id)}
+                        className={`cursor-grab active:cursor-grabbing ${isHighValue ? 'ring-1 ring-primary/30 bg-primary/[0.02]' : ''} ${isStale ? 'border-warning/50' : ''}`}
+                      >
+                        <CardContent className="p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium truncate">{lead.name}</p>
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); openEdit(lead); }}>
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <GripVertical className="h-3 w-3 text-muted-foreground" />
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {lead.tag && <Badge className={`text-[10px] px-1.5 py-0 ${tagColors[lead.tag as LeadTag] || ''}`}>{LEAD_TAG_LABELS[lead.tag as LeadTag] || lead.tag}</Badge>}
-                          {lead.origin && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{lead.origin}</Badge>}
-                        </div>
-                        {(lead.potential_value ?? 0) > 0 && <p className="text-xs font-medium text-primary">{formatCurrency(lead.potential_value!)}</p>}
-                        {lead.interest && <p className="text-xs text-muted-foreground">{lead.interest}</p>}
-                        {lead.phone && (
-                          <Button variant="ghost" size="sm" className="h-6 text-xs p-0 text-success" onClick={e => { e.stopPropagation(); window.open(whatsappLink(lead.phone || ''), '_blank'); }}>
-                            <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {lead.tag && <Badge className={`text-[10px] px-1.5 py-0 ${tagColors[lead.tag as LeadTag] || ''}`}>{LEAD_TAG_LABELS[lead.tag as LeadTag] || lead.tag}</Badge>}
+                            {lead.origin && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{lead.origin}</Badge>}
+                          </div>
+                          {(lead.potential_value ?? 0) > 0 && (
+                            <p className={`text-xs font-semibold ${isHighValue ? 'text-primary' : 'text-muted-foreground'}`}>
+                              {formatCurrency(lead.potential_value!)}
+                            </p>
+                          )}
+                          {lastContact && (
+                            <p className={`text-[10px] flex items-center gap-1 ${isStale ? 'text-warning font-medium' : 'text-muted-foreground'}`}>
+                              {isStale && <AlertCircle className="h-3 w-3" />}
+                              <Clock className="h-3 w-3" /> {getRelativeTime(lastContact)}
+                            </p>
+                          )}
+                          {lead.interest && <p className="text-xs text-muted-foreground truncate">{lead.interest}</p>}
+                          {lead.phone && (
+                            <Button variant="ghost" size="sm" className="h-6 text-xs p-0 text-success" onClick={e => { e.stopPropagation(); openWhatsApp(lead); }}>
+                              <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -232,6 +282,16 @@ export default function LeadsPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* WhatsApp Template Selector */}
+        {waLead && (
+          <WhatsAppTemplateSelector
+            open={waOpen}
+            onOpenChange={v => { setWaOpen(v); if (!v) setWaLead(null); }}
+            phone={waLead.phone || ''}
+            leadName={waLead.name}
+          />
+        )}
       </div>
     </AppLayout>
   );
