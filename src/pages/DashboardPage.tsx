@@ -9,6 +9,7 @@ import { ActionOfTheDay } from '@/components/dashboard/ActionOfTheDay';
 import { WeeklyProgress } from '@/components/dashboard/WeeklyProgress';
 import { TopOportunidades } from '@/components/dashboard/TopOportunidades';
 import { PipelineAnalytics } from '@/components/dashboard/PipelineAnalytics';
+import { MonthlyGoal } from '@/components/dashboard/MonthlyGoal';
 
 const STATUS_COLORS = ['#3b82f6', '#f59e0b', '#eab308', '#10b981', '#ef4444'];
 
@@ -96,6 +97,9 @@ export default function DashboardPage() {
 
         {/* Action of the Day */}
         <ActionOfTheDay />
+
+        {/* Monthly Goal */}
+        <MonthlyGoal />
 
         {/* Weekly Progress */}
         <WeeklyProgress />

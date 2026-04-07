@@ -192,3 +192,121 @@ export function useInsertTemplate() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
   });
 }
+
+export function useUpdateTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: TablesUpdate<'message_templates'> & { id: string }) => {
+      const { error } = await supabase.from('message_templates').update(updates).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  });
+}
+
+export function useDeleteTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('message_templates').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  });
+}
+
+// === GOALS ===
+type Goal = Tables<'goals'>;
+
+export function useGoals() {
+  return useSupabaseQuery<Goal>('goals', 'goals');
+}
+
+export function useUpsertGoal() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ month, target_amount }: { month: string; target_amount: number }) => {
+      const { error } = await supabase.from('goals').upsert(
+        { user_id: user!.id, month, target_amount },
+        { onConflict: 'user_id,month' }
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['goals'] }),
+  });
+}
+
+// === CUSTOM FIELDS ===
+type CustomField = Tables<'custom_fields'>;
+type CustomFieldValue = Tables<'custom_field_values'>;
+
+export function useCustomFields() {
+  return useSupabaseQuery<CustomField>('custom_fields', 'custom_fields');
+}
+
+export function useInsertCustomField() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (f: Omit<TablesInsert<'custom_fields'>, 'user_id'>) => {
+      const { error } = await supabase.from('custom_fields').insert({ ...f, user_id: user!.id });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['custom_fields'] }),
+  });
+}
+
+export function useDeleteCustomField() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('custom_fields').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['custom_fields'] });
+      qc.invalidateQueries({ queryKey: ['custom_field_values'] });
+    },
+  });
+}
+
+export function useCustomFieldValues(contactId?: string) {
+  const { user } = useAuth();
+  return useQuery<CustomFieldValue[]>({
+    queryKey: ['custom_field_values', user?.id, contactId],
+    queryFn: async () => {
+      if (!user || !contactId) return [];
+      const { data, error } = await supabase
+        .from('custom_field_values')
+        .select('*')
+        .eq('contact_id', contactId);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user && !!contactId,
+  });
+}
+
+export function useUpsertCustomFieldValue() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ contact_id, custom_field_id, value }: { contact_id: string; custom_field_id: string; value: string }) => {
+      // Try to find existing
+      const { data: existing } = await supabase
+        .from('custom_field_values')
+        .select('id')
+        .eq('contact_id', contact_id)
+        .eq('custom_field_id', custom_field_id)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await supabase.from('custom_field_values').update({ value }).eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('custom_field_values').insert({ contact_id, custom_field_id, value });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['custom_field_values'] }),
+  });
+}

@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useContacts, useInsertContact, useUpdateContact, useInteractions } from '@/hooks/useStore';
+import { useContacts, useInsertContact, useUpdateContact, useInteractions, useInsertTask } from '@/hooks/useStore';
 import { LeadStage, LeadTag, LEAD_STAGE_LABELS, LEAD_TAG_LABELS, ORIGINS, CONTACT_STATUS_LABELS, ContactStatus } from '@/types';
 import { formatCurrency } from '@/lib/helpers';
 import { Plus, GripVertical, Pencil, MessageCircle, AlertCircle, Clock } from 'lucide-react';
@@ -46,6 +46,7 @@ export default function LeadsPage() {
   const { data: interactions = [] } = useInteractions();
   const insertContact = useInsertContact();
   const updateContact = useUpdateContact();
+  const insertTask = useInsertTask();
 
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -120,11 +121,23 @@ export default function LeadsPage() {
 
   const handleDrop = async (stage: LeadStage) => {
     if (!dragId) return;
+    const lead = leads.find(l => l.id === dragId);
     try {
       await updateContact.mutateAsync({
         id: dragId, stage,
         status: stage === 'fechado' ? 'fechado' : stage === 'perdido' ? 'perdido' : undefined,
       });
+      // Post-sale automation: create follow-up task 30 days after closing
+      if (stage === 'fechado' && lead) {
+        const followUpDate = new Date();
+        followUpDate.setDate(followUpDate.getDate() + 30);
+        await insertTask.mutateAsync({
+          title: `Follow-up pós-venda: ${lead.name}`,
+          due_date: followUpDate.toISOString().split('T')[0],
+          contact_id: dragId,
+        });
+        toast.success('Tarefa de pós-venda criada automaticamente (30 dias)');
+      }
     } catch { toast.error('Erro ao mover lead'); }
     setDragId(null);
   };
