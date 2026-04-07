@@ -200,10 +200,22 @@ export default function CaixaPage() {
               {expenseByCategory.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
               ) : (
-                <div className="h-64">
+                <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={expenseByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name }) => name}>
+                      <Pie
+                        data={expenseByCategory}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        innerRadius={35}
+                        paddingAngle={2}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        labelLine={{ strokeWidth: 1 }}
+                        fontSize={11}
+                      >
                         {expenseByCategory.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                       </Pie>
                       <Tooltip formatter={(v: number) => formatCurrency(v)} />

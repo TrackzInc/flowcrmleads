@@ -221,10 +221,22 @@ export default function DashboardPage() {
               {leadsByStageChart.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Sem leads</p>
               ) : (
-                <div className="h-64">
+                <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={leadsByStageChart} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`}>
+                      <Pie
+                        data={leadsByStageChart}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        innerRadius={35}
+                        paddingAngle={2}
+                        label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                        labelLine={{ strokeWidth: 1 }}
+                        fontSize={11}
+                      >
                         {leadsByStageChart.map((_, i) => <Cell key={i} fill={STATUS_COLORS[i % STATUS_COLORS.length]} />)}
                       </Pie>
                       <Tooltip />
