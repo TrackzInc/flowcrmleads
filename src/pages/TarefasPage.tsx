@@ -10,9 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useTasks, useContacts, useInsertTask, useUpdateTask, useDeleteTask, useUpdateContact } from '@/hooks/useStore';
 import { formatDate, formatCurrency, isOverdue } from '@/lib/helpers';
-import { Plus, AlertTriangle, MessageCircle, Calendar, RefreshCw } from 'lucide-react';
+import { Plus, AlertTriangle, MessageCircle, Calendar, RefreshCw, CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { WhatsAppTemplateSelector } from '@/components/WhatsAppTemplateSelector';
+import { FollowupSection } from '@/components/tarefas/FollowupSection';
+import { CustomFieldsManager } from '@/components/CustomFieldsManager';
 
 export default function TarefasPage() {
   const { data: tasks = [] } = useTasks();
@@ -27,8 +29,6 @@ export default function TarefasPage() {
   const [form, setForm] = useState({ title: '', dueDate: new Date().toISOString().split('T')[0], contactId: '' });
   const [waOpen, setWaOpen] = useState(false);
   const [waLead, setWaLead] = useState<any>(null);
-  const [rescheduleId, setRescheduleId] = useState<string | null>(null);
-  const [rescheduleDate, setRescheduleDate] = useState('');
 
   // Follow-up leads
   const leadsWithFollowup = useMemo(() => contacts.filter(c => c.is_lead && c.next_contact_date), [contacts]);
@@ -63,6 +63,20 @@ export default function TarefasPage() {
     try { await deleteTask.mutateAsync(id); } catch { toast.error('Erro ao excluir'); }
   };
 
+  const quickRescheduleTask = async (id: string, target: 'tomorrow' | 'next_week') => {
+    const d = new Date();
+    if (target === 'tomorrow') {
+      d.setDate(d.getDate() + 1);
+    } else {
+      d.setDate(d.getDate() + (8 - d.getDay())); // next monday
+    }
+    const dateStr = d.toISOString().split('T')[0];
+    try {
+      await updateTask.mutateAsync({ id, due_date: dateStr });
+      toast.success(target === 'tomorrow' ? 'Reagendado para amanhã' : 'Reagendado para próxima semana');
+    } catch { toast.error('Erro ao reagendar'); }
+  };
+
   const markFollowupDone = async (leadId: string) => {
     try {
       await updateContact.mutateAsync({ id: leadId, next_contact_date: null });
@@ -70,12 +84,19 @@ export default function TarefasPage() {
     } catch { toast.error('Erro'); }
   };
 
-  const reschedule = async (leadId: string) => {
-    if (!rescheduleDate) return;
+  const rescheduleFollowup = async (leadId: string, target: 'tomorrow' | 'next_week' | string) => {
+    let dateStr: string;
+    if (target === 'tomorrow') {
+      const d = new Date(); d.setDate(d.getDate() + 1);
+      dateStr = d.toISOString().split('T')[0];
+    } else if (target === 'next_week') {
+      const d = new Date(); d.setDate(d.getDate() + (8 - d.getDay()));
+      dateStr = d.toISOString().split('T')[0];
+    } else {
+      dateStr = target;
+    }
     try {
-      await updateContact.mutateAsync({ id: leadId, next_contact_date: rescheduleDate });
-      setRescheduleId(null);
-      setRescheduleDate('');
+      await updateContact.mutateAsync({ id: leadId, next_contact_date: dateStr });
       toast.success('Reagendado');
     } catch { toast.error('Erro ao reagendar'); }
   };
@@ -98,55 +119,6 @@ export default function TarefasPage() {
   const overdueCount = tasks.filter(t => !t.done && isOverdue(t.due_date)).length;
   const todayStr = new Date().toISOString().split('T')[0];
   const todayCount = tasks.filter(t => !t.done && t.due_date === todayStr).length;
-
-  const FollowupSection = ({ title, leads, color }: { title: string; leads: any[]; color: string }) => {
-    if (leads.length === 0) return null;
-    return (
-      <div className="space-y-2">
-        <h3 className={`text-sm font-semibold ${color}`}>{title} ({leads.length})</h3>
-        {leads.map(l => (
-          <Card key={l.id} className={color === 'text-destructive' ? 'border-destructive/30' : color === 'text-warning' ? 'border-warning/30' : ''}>
-            <CardContent className="py-3 px-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{l.name}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                    <Calendar className="h-3 w-3" />
-                    <span className={color}>{formatDate(l.next_contact_date!)}</span>
-                    <Badge variant="secondary" className="text-[10px]">{l.stage}</Badge>
-                    {(l.potential_value ?? 0) > 0 && <span className="text-primary font-medium">{formatCurrency(l.potential_value!)}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {l.phone && (
-                    <Button variant="ghost" size="sm" className="h-7 text-xs text-success" onClick={() => openWhatsApp(l)}>
-                      <MessageCircle className="h-3 w-3" />
-                    </Button>
-                  )}
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => markFollowupDone(l.id)}>Feito</Button>
-                  {rescheduleId === l.id ? (
-                    <div className="flex items-center gap-1">
-                      <Input
-                        type="date"
-                        className="h-7 w-36 text-xs"
-                        value={rescheduleDate}
-                        onChange={e => setRescheduleDate(e.target.value)}
-                      />
-                      <Button size="sm" className="h-7 text-xs" onClick={() => reschedule(l.id)}>OK</Button>
-                    </div>
-                  ) : (
-                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setRescheduleId(l.id); setRescheduleDate(l.next_contact_date || ''); }}>
-                      <RefreshCw className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <AppLayout>
@@ -187,9 +159,9 @@ export default function TarefasPage() {
         {/* Follow-up sections */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Follow-ups de Leads</h2>
-          <FollowupSection title="Atrasados" leads={overdueLeads} color="text-destructive" />
-          <FollowupSection title="Hoje" leads={todayLeads} color="text-warning" />
-          <FollowupSection title="Futuros" leads={futureLeads} color="text-muted-foreground" />
+          <FollowupSection title="Atrasados" leads={overdueLeads} color="text-destructive" onDone={markFollowupDone} onReschedule={rescheduleFollowup} onWhatsApp={openWhatsApp} />
+          <FollowupSection title="Hoje" leads={todayLeads} color="text-warning" onDone={markFollowupDone} onReschedule={rescheduleFollowup} onWhatsApp={openWhatsApp} />
+          <FollowupSection title="Futuros" leads={futureLeads} color="text-muted-foreground" onDone={markFollowupDone} onReschedule={rescheduleFollowup} onWhatsApp={openWhatsApp} />
           {leadsWithFollowup.length === 0 && <p className="text-sm text-muted-foreground">Nenhum follow-up agendado</p>}
         </div>
 
@@ -220,6 +192,16 @@ export default function TarefasPage() {
                         )}
                       </div>
                     </div>
+                    {!t.done && (
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => quickRescheduleTask(t.id, 'tomorrow')} title="Amanhã">
+                          <CalendarPlus className="h-3 w-3 mr-1" /> Amanhã
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => quickRescheduleTask(t.id, 'next_week')} title="Próxima Semana">
+                          Próx. Sem.
+                        </Button>
+                      </div>
+                    )}
                     {contact?.phone && (
                       <Button variant="ghost" size="sm" className="h-7 text-xs text-success" onClick={() => openWhatsApp(contact)}>
                         <MessageCircle className="h-3 w-3" />
@@ -232,6 +214,9 @@ export default function TarefasPage() {
             })}
           </div>
         </div>
+
+        {/* Custom Fields */}
+        <CustomFieldsManager />
 
         {waLead && (
           <WhatsAppTemplateSelector
