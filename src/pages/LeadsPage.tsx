@@ -45,6 +45,7 @@ export default function LeadsPage() {
   const { data: contacts = [] } = useContacts();
   const { data: interactions = [] } = useInteractions();
   const insertContact = useInsertContact();
+  const updateContact = useUpdateContact();
   const insertTask = useInsertTask();
 
   const [open, setOpen] = useState(false);
