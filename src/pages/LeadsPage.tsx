@@ -62,6 +62,7 @@ export default function LeadsPage() {
   const [editForm, setEditForm] = useState({
     name: '', phone: '', email: '', origin: '', status: 'novo' as ContactStatus,
     notes: '', next_contact_date: '', tag: 'frio' as LeadTag, interest: '', potential_value: '',
+    document_links: '' as string,
   });
 
   const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', tag: 'frio', interest: '', potential_value: '' });
@@ -81,17 +82,20 @@ export default function LeadsPage() {
 
   const openEdit = (lead: any) => {
     setEditingLead(lead);
+    const links = Array.isArray(lead.document_links) ? lead.document_links.join('\n') : '';
     setEditForm({
       name: lead.name, phone: lead.phone || '', email: lead.email || '', origin: lead.origin || '',
       status: lead.status || 'novo', notes: lead.notes || '', next_contact_date: lead.next_contact_date || '',
       tag: (lead.tag as LeadTag) || 'frio', interest: lead.interest || '',
       potential_value: lead.potential_value ? String(lead.potential_value) : '',
+      document_links: links,
     });
     setEditOpen(true);
   };
 
   const handleEditSave = async () => {
     if (!editingLead || !editForm.name) return;
+    const docLinks = editForm.document_links.split('\n').map(s => s.trim()).filter(Boolean);
     try {
       await updateContact.mutateAsync({
         id: editingLead.id,
@@ -100,6 +104,7 @@ export default function LeadsPage() {
         next_contact_date: editForm.next_contact_date || null,
         tag: editForm.tag, interest: editForm.interest,
         potential_value: editForm.potential_value ? parseFloat(editForm.potential_value) : 0,
+        document_links: docLinks as any,
       });
       setEditOpen(false);
       setEditingLead(null);
@@ -288,6 +293,15 @@ export default function LeadsPage() {
               <div><Label>Valor Potencial (R$)</Label><Input type="number" step="0.01" value={editForm.potential_value} onChange={e => setEditForm(f => ({ ...f, potential_value: e.target.value }))} /></div>
               <div><Label>Próximo Contato</Label><Input type="date" value={editForm.next_contact_date} onChange={e => setEditForm(f => ({ ...f, next_contact_date: e.target.value }))} /></div>
               <div><Label>Observações</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
+              <div>
+                <Label>Documentos/Propostas (links, um por linha)</Label>
+                <Textarea
+                  value={editForm.document_links}
+                  onChange={e => setEditForm(f => ({ ...f, document_links: e.target.value }))}
+                  placeholder="https://drive.google.com/...&#10;https://notion.so/..."
+                  rows={3}
+                />
+              </div>
               <div className="flex gap-2">
                 <Button onClick={handleEditSave} className="flex-1" disabled={updateContact.isPending}>Salvar Alterações</Button>
                 <Button variant="outline" onClick={() => { setEditOpen(false); setEditingLead(null); }}>Cancelar</Button>

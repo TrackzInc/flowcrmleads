@@ -10,6 +10,8 @@ import ContatosPage from "./pages/ContatosPage";
 import LeadsPage from "./pages/LeadsPage";
 import TarefasPage from "./pages/TarefasPage";
 import ProspeccaoPage from "./pages/ProspeccaoPage";
+import ServicosPage from "./pages/ServicosPage";
+import CalendarioPage from "./pages/CalendarioPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -38,6 +40,8 @@ const AppRoutes = () => (
     <Route path="/leads" element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
     <Route path="/prospeccao" element={<ProtectedRoute><ProspeccaoPage /></ProtectedRoute>} />
     <Route path="/tarefas" element={<ProtectedRoute><TarefasPage /></ProtectedRoute>} />
+    <Route path="/servicos" element={<ProtectedRoute><ServicosPage /></ProtectedRoute>} />
+    <Route path="/calendario" element={<ProtectedRoute><CalendarioPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
