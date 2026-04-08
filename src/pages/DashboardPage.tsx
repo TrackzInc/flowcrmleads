@@ -10,6 +10,7 @@ import { WeeklyProgress } from '@/components/dashboard/WeeklyProgress';
 import { TopOportunidades } from '@/components/dashboard/TopOportunidades';
 import { PipelineAnalytics } from '@/components/dashboard/PipelineAnalytics';
 import { MonthlyGoal } from '@/components/dashboard/MonthlyGoal';
+import { LeadOriginChart } from '@/components/dashboard/LeadOriginChart';
 
 const STATUS_COLORS = ['#3b82f6', '#f59e0b', '#eab308', '#10b981', '#ef4444'];
 
@@ -214,7 +215,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Leads by stage + Top opportunities */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-base">Leads por Etapa</CardTitle></CardHeader>
             <CardContent>
@@ -246,6 +247,8 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          <LeadOriginChart />
 
           <TopOportunidades />
         </div>
