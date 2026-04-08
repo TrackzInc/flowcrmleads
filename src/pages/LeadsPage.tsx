@@ -293,6 +293,15 @@ export default function LeadsPage() {
               <div><Label>Valor Potencial (R$)</Label><Input type="number" step="0.01" value={editForm.potential_value} onChange={e => setEditForm(f => ({ ...f, potential_value: e.target.value }))} /></div>
               <div><Label>Próximo Contato</Label><Input type="date" value={editForm.next_contact_date} onChange={e => setEditForm(f => ({ ...f, next_contact_date: e.target.value }))} /></div>
               <div><Label>Observações</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
+              <div>
+                <Label>Documentos/Propostas (links, um por linha)</Label>
+                <Textarea
+                  value={editForm.document_links}
+                  onChange={e => setEditForm(f => ({ ...f, document_links: e.target.value }))}
+                  placeholder="https://drive.google.com/...&#10;https://notion.so/..."
+                  rows={3}
+                />
+              </div>
               <div className="flex gap-2">
                 <Button onClick={handleEditSave} className="flex-1" disabled={updateContact.isPending}>Salvar Alterações</Button>
                 <Button variant="outline" onClick={() => { setEditOpen(false); setEditingLead(null); }}>Cancelar</Button>
