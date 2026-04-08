@@ -17,6 +17,7 @@ export type Database = {
       contacts: {
         Row: {
           created_at: string
+          document_links: Json | null
           email: string | null
           id: string
           interest: string | null
@@ -35,6 +36,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          document_links?: Json | null
           email?: string | null
           id?: string
           interest?: string | null
@@ -53,6 +55,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          document_links?: Json | null
           email?: string | null
           id?: string
           interest?: string | null
@@ -241,6 +244,33 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          price?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
           updated_at?: string
           user_id?: string
         }
