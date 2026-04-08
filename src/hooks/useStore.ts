@@ -215,6 +215,47 @@ export function useDeleteTemplate() {
   });
 }
 
+// === SERVICES ===
+type Service = Tables<'services'>;
+
+export function useServices() {
+  return useSupabaseQuery<Service>('services', 'services');
+}
+
+export function useInsertService() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (s: Omit<TablesInsert<'services'>, 'user_id'>) => {
+      const { error } = await supabase.from('services').insert({ ...s, user_id: user!.id });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['services'] }),
+  });
+}
+
+export function useUpdateService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: TablesUpdate<'services'> & { id: string }) => {
+      const { error } = await supabase.from('services').update(updates).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['services'] }),
+  });
+}
+
+export function useDeleteService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('services').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['services'] }),
+  });
+}
+
 // === GOALS ===
 type Goal = Tables<'goals'>;
 

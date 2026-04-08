@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
-import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useContacts } from '@/hooks/useStore';
 import { isOverdue } from '@/lib/helpers';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { ExportButton } from '@/components/ExportButton';
 import {
   Sidebar,
   SidebarContent,
@@ -26,12 +25,13 @@ const items = [
   { title: 'Leads', url: '/leads', icon: Target },
   { title: 'Prospecção', url: '/prospeccao', icon: Crosshair },
   { title: 'Tarefas', url: '/tarefas', icon: CheckSquare },
+  { title: 'Calendário', url: '/calendario', icon: CalendarDays },
+  { title: 'Serviços', url: '/servicos', icon: Briefcase },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const location = useLocation();
   const { signOut, user } = useAuth();
   const { data: contacts = [] } = useContacts();
 
@@ -78,8 +78,9 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-3">
+        {!collapsed && <ExportButton />}
         {!collapsed && user && (
-          <p className="text-xs text-sidebar-muted truncate mb-2">{user.email}</p>
+          <p className="text-xs text-sidebar-muted truncate my-2">{user.email}</p>
         )}
         <Button
           variant="ghost"
