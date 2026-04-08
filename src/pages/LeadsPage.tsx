@@ -62,6 +62,7 @@ export default function LeadsPage() {
   const [editForm, setEditForm] = useState({
     name: '', phone: '', email: '', origin: '', status: 'novo' as ContactStatus,
     notes: '', next_contact_date: '', tag: 'frio' as LeadTag, interest: '', potential_value: '',
+    document_links: '' as string,
   });
 
   const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', tag: 'frio', interest: '', potential_value: '' });
@@ -81,17 +82,20 @@ export default function LeadsPage() {
 
   const openEdit = (lead: any) => {
     setEditingLead(lead);
+    const links = Array.isArray(lead.document_links) ? lead.document_links.join('\n') : '';
     setEditForm({
       name: lead.name, phone: lead.phone || '', email: lead.email || '', origin: lead.origin || '',
       status: lead.status || 'novo', notes: lead.notes || '', next_contact_date: lead.next_contact_date || '',
       tag: (lead.tag as LeadTag) || 'frio', interest: lead.interest || '',
       potential_value: lead.potential_value ? String(lead.potential_value) : '',
+      document_links: links,
     });
     setEditOpen(true);
   };
 
   const handleEditSave = async () => {
     if (!editingLead || !editForm.name) return;
+    const docLinks = editForm.document_links.split('\n').map(s => s.trim()).filter(Boolean);
     try {
       await updateContact.mutateAsync({
         id: editingLead.id,
@@ -100,6 +104,7 @@ export default function LeadsPage() {
         next_contact_date: editForm.next_contact_date || null,
         tag: editForm.tag, interest: editForm.interest,
         potential_value: editForm.potential_value ? parseFloat(editForm.potential_value) : 0,
+        document_links: docLinks as any,
       });
       setEditOpen(false);
       setEditingLead(null);
