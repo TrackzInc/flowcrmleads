@@ -278,6 +278,36 @@ export function useUpsertGoal() {
   });
 }
 
+// === APPOINTMENTS ===
+type Appointment = Tables<'appointments'>;
+
+export function useAppointments() {
+  return useSupabaseQuery<Appointment>('appointments', 'appointments');
+}
+
+export function useInsertAppointment() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (a: Omit<TablesInsert<'appointments'>, 'user_id'>) => {
+      const { error } = await supabase.from('appointments').insert({ ...a, user_id: user!.id });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),
+  });
+}
+
+export function useDeleteAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('appointments').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),
+  });
+}
+
 // === CUSTOM FIELDS ===
 type CustomField = Tables<'custom_fields'>;
 type CustomFieldValue = Tables<'custom_field_values'>;
