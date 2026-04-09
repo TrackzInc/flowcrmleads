@@ -6,6 +6,7 @@ import { useContacts } from '@/hooks/useStore';
 import { isOverdue } from '@/lib/helpers';
 import { Button } from '@/components/ui/button';
 import { ExportButton } from '@/components/ExportButton';
+import logoImg from '@/assets/logo.png';
 import {
   Sidebar,
   SidebarContent,
