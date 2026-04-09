@@ -43,10 +43,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="pt-4">
-        <div className={`px-4 pb-4 ${collapsed ? 'text-center' : ''}`}>
-          <h1 className={`font-bold text-sidebar-primary ${collapsed ? 'text-sm' : 'text-xl'}`}>
-            {collapsed ? 'F' : 'FlowCRM'}
-          </h1>
+        <div className={`px-4 pb-4 flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
+          <img src={logoImg} alt="FlowCRM" className={collapsed ? 'h-8 w-8 object-contain' : 'h-10 object-contain'} />
           {!collapsed && <p className="text-xs text-sidebar-muted mt-0.5">Seu negócio em controle</p>}
         </div>
         <SidebarGroup>
