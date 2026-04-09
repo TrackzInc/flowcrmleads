@@ -43,8 +43,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="pt-4">
-        <div className={`px-4 pb-4 flex items-center ${collapsed ? 'justify-center' : ''}`}>
-          <img src={logoImg} alt="FlowCRM" className={collapsed ? 'h-10 w-10 object-contain' : 'h-12 object-contain'} />
+        <div className="px-4 pb-4 flex justify-center">
+          <img src={logoImg} alt="FlowCRM" className={collapsed ? 'h-10 w-10 object-contain' : 'h-16 object-contain'} />
         </div>
         <SidebarGroup>
           <SidebarGroupContent>
