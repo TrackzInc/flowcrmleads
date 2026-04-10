@@ -57,16 +57,42 @@ export default function LeadsPage() {
   const [waLead, setWaLead] = useState<any>(null);
 
   const [form, setForm] = useState({
-    name: '', phone: '', email: '', origin: '', tag: 'frio' as LeadTag, interest: '', potential_value: '',
+    name: '', phone: '', email: '', origin: '', tag: 'frio' as LeadTag, selectedServices: [] as string[],
   });
 
   const [editForm, setEditForm] = useState({
     name: '', phone: '', email: '', origin: '', status: 'novo' as ContactStatus,
-    notes: '', next_contact_date: '', tag: 'frio' as LeadTag, interest: '', potential_value: '',
+    notes: '', next_contact_date: '', tag: 'frio' as LeadTag, selectedServices: [] as string[],
     document_links: '' as string,
   });
 
-  const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', tag: 'frio', interest: '', potential_value: '' });
+  const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', tag: 'frio', selectedServices: [] });
+
+  const getSelectedServicesTotal = (selectedIds: string[]) => {
+    return services.filter(s => selectedIds.includes(s.id)).reduce((sum, s) => sum + Number(s.price), 0);
+  };
+
+  const getInterestString = (selectedIds: string[]) => {
+    return services.filter(s => selectedIds.includes(s.id)).map(s => s.name).join(', ');
+  };
+
+  const toggleService = (serviceId: string, formType: 'create' | 'edit') => {
+    if (formType === 'create') {
+      setForm(f => ({
+        ...f,
+        selectedServices: f.selectedServices.includes(serviceId)
+          ? f.selectedServices.filter(id => id !== serviceId)
+          : [...f.selectedServices, serviceId],
+      }));
+    } else {
+      setEditForm(f => ({
+        ...f,
+        selectedServices: f.selectedServices.includes(serviceId)
+          ? f.selectedServices.filter(id => id !== serviceId)
+          : [...f.selectedServices, serviceId],
+      }));
+    }
+  };
 
   const handleSave = async () => {
     if (!form.name) return;
