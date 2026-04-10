@@ -99,8 +99,8 @@ export default function LeadsPage() {
     try {
       await insertContact.mutateAsync({
         name: form.name, phone: form.phone, email: form.email, origin: form.origin,
-        tag: form.tag, interest: form.interest, stage: 'novo_lead', is_lead: true, status: 'novo',
-        potential_value: form.potential_value ? parseFloat(form.potential_value) : 0,
+        tag: form.tag, interest: getInterestString(form.selectedServices), stage: 'novo_lead', is_lead: true, status: 'novo',
+        potential_value: getSelectedServicesTotal(form.selectedServices),
       });
       setOpen(false);
       resetForm();
@@ -110,11 +110,12 @@ export default function LeadsPage() {
   const openEdit = (lead: any) => {
     setEditingLead(lead);
     const links = Array.isArray(lead.document_links) ? lead.document_links.join('\n') : '';
+    const interestNames = (lead.interest || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+    const matchedServiceIds = services.filter(s => interestNames.includes(s.name)).map(s => s.id);
     setEditForm({
       name: lead.name, phone: lead.phone || '', email: lead.email || '', origin: lead.origin || '',
       status: lead.status || 'novo', notes: lead.notes || '', next_contact_date: lead.next_contact_date || '',
-      tag: (lead.tag as LeadTag) || 'frio', interest: lead.interest || '',
-      potential_value: lead.potential_value ? String(lead.potential_value) : '',
+      tag: (lead.tag as LeadTag) || 'frio', selectedServices: matchedServiceIds,
       document_links: links,
     });
     setEditOpen(true);
@@ -129,8 +130,8 @@ export default function LeadsPage() {
         name: editForm.name, phone: editForm.phone, email: editForm.email, origin: editForm.origin,
         status: editForm.status, notes: editForm.notes,
         next_contact_date: editForm.next_contact_date || null,
-        tag: editForm.tag, interest: editForm.interest,
-        potential_value: editForm.potential_value ? parseFloat(editForm.potential_value) : 0,
+        tag: editForm.tag, interest: getInterestString(editForm.selectedServices),
+        potential_value: getSelectedServicesTotal(editForm.selectedServices),
         document_links: docLinks as any,
       });
       setEditOpen(false);
@@ -208,8 +209,30 @@ export default function LeadsPage() {
                     <SelectContent>{Object.entries(LEAD_TAG_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div><Label>Interesse</Label><Input value={form.interest} onChange={e => setForm(f => ({ ...f, interest: e.target.value }))} placeholder="Ex: consultoria, design..." /></div>
-                <div><Label>Valor Potencial (R$)</Label><Input type="number" step="0.01" value={form.potential_value} onChange={e => setForm(f => ({ ...f, potential_value: e.target.value }))} placeholder="0,00" /></div>
+                <div>
+                  <Label>Interesse (Serviços)</Label>
+                  <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
+                    {services.map(s => {
+                      const selected = form.selectedServices.includes(s.id);
+                      return (
+                        <Badge
+                          key={s.id}
+                          variant={selected ? 'default' : 'outline'}
+                          className={`cursor-pointer text-xs ${selected ? '' : 'opacity-60 hover:opacity-100'}`}
+                          onClick={() => toggleService(s.id, 'create')}
+                        >
+                          {s.name} - {formatCurrency(Number(s.price))}
+                          {selected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {services.length === 0 && <span className="text-xs text-muted-foreground">Cadastre serviços primeiro</span>}
+                  </div>
+                </div>
+                <div>
+                  <Label>Valor Potencial (R$)</Label>
+                  <Input type="text" readOnly value={formatCurrency(getSelectedServicesTotal(form.selectedServices))} className="bg-muted" />
+                </div>
                 <Button onClick={handleSave} className="w-full" disabled={insertContact.isPending}>Salvar</Button>
               </div>
             </DialogContent>
@@ -316,8 +339,30 @@ export default function LeadsPage() {
                   <SelectContent>{Object.entries(LEAD_TAG_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><Label>Interesse</Label><Input value={editForm.interest} onChange={e => setEditForm(f => ({ ...f, interest: e.target.value }))} /></div>
-              <div><Label>Valor Potencial (R$)</Label><Input type="number" step="0.01" value={editForm.potential_value} onChange={e => setEditForm(f => ({ ...f, potential_value: e.target.value }))} /></div>
+              <div>
+                <Label>Interesse (Serviços)</Label>
+                <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
+                  {services.map(s => {
+                    const selected = editForm.selectedServices.includes(s.id);
+                    return (
+                      <Badge
+                        key={s.id}
+                        variant={selected ? 'default' : 'outline'}
+                        className={`cursor-pointer text-xs ${selected ? '' : 'opacity-60 hover:opacity-100'}`}
+                        onClick={() => toggleService(s.id, 'edit')}
+                      >
+                        {s.name} - {formatCurrency(Number(s.price))}
+                        {selected && <X className="h-3 w-3 ml-1" />}
+                      </Badge>
+                    );
+                  })}
+                  {services.length === 0 && <span className="text-xs text-muted-foreground">Cadastre serviços primeiro</span>}
+                </div>
+              </div>
+              <div>
+                <Label>Valor Potencial (R$)</Label>
+                <Input type="text" readOnly value={formatCurrency(getSelectedServicesTotal(editForm.selectedServices))} className="bg-muted" />
+              </div>
               <div><Label>Próximo Contato</Label><Input type="date" value={editForm.next_contact_date} onChange={e => setEditForm(f => ({ ...f, next_contact_date: e.target.value }))} /></div>
               <div><Label>Observações</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
               <div>
