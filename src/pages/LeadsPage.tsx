@@ -44,6 +44,7 @@ function getRelativeTime(dateStr: string) {
 export default function LeadsPage() {
   const { data: contacts = [] } = useContacts();
   const { data: interactions = [] } = useInteractions();
+  const { data: services = [] } = useServices();
   const insertContact = useInsertContact();
   const updateContact = useUpdateContact();
   const insertTask = useInsertTask();
