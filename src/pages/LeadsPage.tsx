@@ -210,42 +210,49 @@ export default function LeadsPage() {
                     <SelectContent>{Object.entries(LEAD_TAG_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Collapsible>
-                  <CollapsibleTrigger asChild>
-                    <div className="flex items-center justify-between cursor-pointer">
-                      <Label className="cursor-pointer">Interesse (Serviços)</Label>
-                      <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform" />
-                    </div>
-                  </CollapsibleTrigger>
-                  {form.selectedServices.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {services.filter(s => form.selectedServices.includes(s.id)).map(s => (
-                        <Badge key={s.id} variant="default" className="text-xs cursor-pointer" onClick={() => toggleService(s.id, 'create')}>
-                          {s.name} <X className="h-3 w-3 ml-1" />
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  <CollapsibleContent>
-                    <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
-                      {services.map(s => {
-                        const selected = form.selectedServices.includes(s.id);
-                        return (
-                          <Badge
-                            key={s.id}
-                            variant={selected ? 'default' : 'outline'}
-                            className={`cursor-pointer text-xs ${selected ? '' : 'opacity-60 hover:opacity-100'}`}
-                            onClick={() => toggleService(s.id, 'create')}
-                          >
-                            {s.name} - {formatCurrency(Number(s.price))}
-                            {selected && <X className="h-3 w-3 ml-1" />}
+                <div>
+                  <Label>Interesse (Serviços)</Label>
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <div className="flex items-center justify-between cursor-pointer border rounded-md px-3 py-2 mt-1">
+                        <span className="text-sm text-muted-foreground">
+                          {form.selectedServices.length > 0
+                            ? `${form.selectedServices.length} serviço(s) selecionado(s)`
+                            : 'Selecione os serviços'}
+                        </span>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </CollapsibleTrigger>
+                    {form.selectedServices.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {services.filter(s => form.selectedServices.includes(s.id)).map(s => (
+                          <Badge key={s.id} variant="default" className="text-xs cursor-pointer" onClick={() => toggleService(s.id, 'create')}>
+                            {s.name} <X className="h-3 w-3 ml-1" />
                           </Badge>
-                        );
-                      })}
-                      {services.length === 0 && <span className="text-xs text-muted-foreground">Cadastre serviços primeiro</span>}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                        ))}
+                      </div>
+                    )}
+                    <CollapsibleContent>
+                      <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
+                        {services.map(s => {
+                          const selected = form.selectedServices.includes(s.id);
+                          return (
+                            <Badge
+                              key={s.id}
+                              variant={selected ? 'default' : 'outline'}
+                              className={`cursor-pointer text-xs ${selected ? '' : 'opacity-60 hover:opacity-100'}`}
+                              onClick={() => toggleService(s.id, 'create')}
+                            >
+                              {s.name} - {formatCurrency(Number(s.price))}
+                              {selected && <X className="h-3 w-3 ml-1" />}
+                            </Badge>
+                          );
+                        })}
+                        {services.length === 0 && <span className="text-xs text-muted-foreground">Cadastre serviços primeiro</span>}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
                 <div>
                   <Label>Valor Potencial (R$)</Label>
                   <Input type="text" readOnly value={formatCurrency(getSelectedServicesTotal(form.selectedServices))} className="bg-muted" />
