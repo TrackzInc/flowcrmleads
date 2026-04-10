@@ -8,10 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useContacts, useInsertContact, useUpdateContact, useInteractions, useInsertTask } from '@/hooks/useStore';
+import { useContacts, useInsertContact, useUpdateContact, useInteractions, useInsertTask, useServices } from '@/hooks/useStore';
 import { LeadStage, LeadTag, LEAD_STAGE_LABELS, LEAD_TAG_LABELS, ORIGINS, CONTACT_STATUS_LABELS, ContactStatus } from '@/types';
 import { formatCurrency } from '@/lib/helpers';
-import { Plus, GripVertical, Pencil, MessageCircle, AlertCircle, Clock } from 'lucide-react';
+import { Plus, GripVertical, Pencil, MessageCircle, AlertCircle, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { WhatsAppTemplateSelector } from '@/components/WhatsAppTemplateSelector';
 
