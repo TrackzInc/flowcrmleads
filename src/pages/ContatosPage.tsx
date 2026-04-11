@@ -56,7 +56,6 @@ export default function ContatosPage() {
 
   const filtered = useMemo(() => {
     return contacts
-      .filter(c => !c.is_lead)
       .filter(c => filterStatus === 'all' || c.status === filterStatus)
       .filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
   }, [contacts, filterStatus, search]);
