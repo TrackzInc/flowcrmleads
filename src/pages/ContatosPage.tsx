@@ -48,6 +48,7 @@ export default function ContatosPage() {
       await insertContact.mutateAsync({
         name: form.name, phone: form.phone, email: form.email, origin: form.origin,
         status: form.status, notes: form.notes, next_contact_date: form.nextContactDate || null,
+        is_lead: true, stage: 'novo_lead',
       });
       setOpen(false);
       resetForm();
@@ -56,7 +57,6 @@ export default function ContatosPage() {
 
   const filtered = useMemo(() => {
     return contacts
-      .filter(c => !c.is_lead)
       .filter(c => filterStatus === 'all' || c.status === filterStatus)
       .filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
   }, [contacts, filterStatus, search]);
