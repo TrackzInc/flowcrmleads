@@ -38,9 +38,10 @@ export default function ContatosPage() {
 
   const [form, setForm] = useState({
     name: '', phone: '', email: '', origin: '', status: 'novo' as ContactStatus, notes: '', nextContactDate: '',
+    optin_email: false, optin_whatsapp: false, tags: '',
   });
 
-  const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', status: 'novo', notes: '', nextContactDate: '' });
+  const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', status: 'novo', notes: '', nextContactDate: '', optin_email: false, optin_whatsapp: false, tags: '' });
 
   const handleSave = async () => {
     if (!form.name) return;
@@ -49,6 +50,9 @@ export default function ContatosPage() {
         name: form.name, phone: form.phone, email: form.email, origin: form.origin,
         status: form.status, notes: form.notes, next_contact_date: form.nextContactDate || null,
         is_lead: true, stage: 'novo_lead',
+        optin_email: form.optin_email,
+        optin_whatsapp: form.optin_whatsapp,
+        tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
       });
       setOpen(false);
       resetForm();
