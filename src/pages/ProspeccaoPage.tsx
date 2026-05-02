@@ -3,13 +3,16 @@ import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useContacts, useInsertInteraction, useUpdateContact } from '@/hooks/useStore';
 import { formatCurrency, whatsappLink } from '@/lib/helpers';
 import { LEAD_STAGE_LABELS, LeadStage } from '@/types';
-import { MessageCircle, SkipForward, Save, Crosshair } from 'lucide-react';
+import { MessageCircle, SkipForward, Save, Crosshair, Mail, Send, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { WhatsAppTemplateSelector } from '@/components/WhatsAppTemplateSelector';
+import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 export default function ProspeccaoPage() {
   const { data: contacts = [] } = useContacts();
@@ -19,6 +22,9 @@ export default function ProspeccaoPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [note, setNote] = useState('');
   const [waOpen, setWaOpen] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [sending, setSending] = useState(false);
 
   // Active leads sorted by potential value desc
   const leads = useMemo(() => {
@@ -123,6 +129,65 @@ export default function ProspeccaoPage() {
               <Button className="flex-1" onClick={next}>
                 <SkipForward className="h-4 w-4 mr-1" /> Próximo
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold flex items-center gap-2"><Mail className="h-4 w-4" /> Envio rápido</h3>
+              <div className="flex gap-1">
+                {(lead as any).optin_email ? (
+                  <Badge variant="outline" className="text-[10px] text-success border-success/40">opt-in Email ✓</Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground">sem opt-in Email</Badge>
+                )}
+                {(lead as any).optin_whatsapp ? (
+                  <Badge variant="outline" className="text-[10px] text-success border-success/40">opt-in WA ✓</Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground">sem opt-in WA</Badge>
+                )}
+              </div>
+            </div>
+
+            {lead.email && (lead as any).optin_email ? (
+              <>
+                <Input placeholder="Assunto (use {{nome}})" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} />
+                <Textarea placeholder="Mensagem (use {{nome}}, {{email}})" rows={3} value={emailBody} onChange={e => setEmailBody(e.target.value)} />
+                <Button
+                  size="sm"
+                  className="w-full"
+                  disabled={sending || !emailBody.trim()}
+                  onClick={async () => {
+                    setSending(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke('send-message', {
+                        body: { contact_id: lead.id, channel: 'email', subject: emailSubject, content: emailBody },
+                      });
+                      if (error) throw error;
+                      if (data?.status === 'sent') toast.success('Email enviado');
+                      else toast.warning(`Registrado como ${data?.status}`);
+                      setEmailSubject(''); setEmailBody('');
+                    } catch (e: any) { toast.error(e.message || 'Erro'); }
+                    finally { setSending(false); }
+                  }}
+                >
+                  <Send className="h-3 w-3 mr-1" /> Enviar Email
+                </Button>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Para enviar email, adicione um email ao contato e ative o opt-in de Email.
+              </p>
+            )}
+
+            <div className="pt-2 border-t">
+              <Link to="/automacoes">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Zap className="h-3 w-3 mr-1" /> Gerenciar Automações
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
