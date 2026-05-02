@@ -41,6 +41,124 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_runs: {
+        Row: {
+          automation_id: string
+          contact_id: string
+          created_at: string
+          current_step: number
+          id: string
+          last_error: string | null
+          next_run_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          automation_id: string
+          contact_id: string
+          created_at?: string
+          current_step?: number
+          id?: string
+          last_error?: string | null
+          next_run_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          automation_id?: string
+          contact_id?: string
+          created_at?: string
+          current_step?: number
+          id?: string
+          last_error?: string | null
+          next_run_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_runs_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_steps: {
+        Row: {
+          action_config: Json
+          action_type: string
+          automation_id: string
+          created_at: string
+          delay_minutes: number
+          id: string
+          step_order: number
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          automation_id: string
+          created_at?: string
+          delay_minutes?: number
+          id?: string
+          step_order: number
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          automation_id?: string
+          created_at?: string
+          delay_minutes?: number
+          id?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_steps_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automations: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           created_at: string
@@ -52,12 +170,15 @@ export type Database = {
           name: string
           next_contact_date: string | null
           notes: string | null
+          optin_email: boolean
+          optin_whatsapp: boolean
           origin: string | null
           phone: string | null
           potential_value: number | null
           stage: string | null
           status: string
           tag: string | null
+          tags: string[]
           updated_at: string
           user_id: string
         }
@@ -71,12 +192,15 @@ export type Database = {
           name: string
           next_contact_date?: string | null
           notes?: string | null
+          optin_email?: boolean
+          optin_whatsapp?: boolean
           origin?: string | null
           phone?: string | null
           potential_value?: number | null
           stage?: string | null
           status?: string
           tag?: string | null
+          tags?: string[]
           updated_at?: string
           user_id: string
         }
@@ -90,12 +214,15 @@ export type Database = {
           name?: string
           next_contact_date?: string | null
           notes?: string | null
+          optin_email?: boolean
+          optin_whatsapp?: boolean
           origin?: string | null
           phone?: string | null
           potential_value?: number | null
           stage?: string | null
           status?: string
           tag?: string | null
+          tags?: string[]
           updated_at?: string
           user_id?: string
         }
@@ -225,6 +352,54 @@ export type Database = {
           },
         ]
       }
+      message_logs: {
+        Row: {
+          automation_id: string | null
+          channel: string
+          contact_id: string | null
+          content: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          recipient: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          automation_id?: string | null
+          channel: string
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          automation_id?: string | null
+          channel?: string
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       message_templates: {
         Row: {
           content: string
@@ -282,6 +457,7 @@ export type Database = {
           id: string
           name: string
           price: number
+          recurrence: string
           updated_at: string
           user_id: string
         }
@@ -290,6 +466,7 @@ export type Database = {
           id?: string
           name: string
           price?: number
+          recurrence?: string
           updated_at?: string
           user_id: string
         }
@@ -298,6 +475,7 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          recurrence?: string
           updated_at?: string
           user_id?: string
         }
