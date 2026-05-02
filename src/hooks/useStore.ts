@@ -40,6 +40,12 @@ export function useInsertContact() {
     mutationFn: async (contact: Omit<TablesInsert<'contacts'>, 'user_id'>) => {
       const { data, error } = await supabase.from('contacts').insert({ ...contact, user_id: user!.id }).select().single();
       if (error) throw error;
+      // Dispara automações de "novo lead criado"
+      try {
+        await supabase.functions.invoke('trigger-automation', {
+          body: { trigger_type: 'lead_created', contact_id: data.id },
+        });
+      } catch (e) { console.warn('trigger-automation failed', e); }
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
@@ -50,8 +56,17 @@ export function useUpdateContact() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: TablesUpdate<'contacts'> & { id: string }) => {
+      const { data: prev } = await supabase.from('contacts').select('stage').eq('id', id).single();
       const { error } = await supabase.from('contacts').update(updates).eq('id', id);
       if (error) throw error;
+      // Dispara trigger se mudou o stage
+      if (updates.stage && prev && prev.stage !== updates.stage) {
+        try {
+          await supabase.functions.invoke('trigger-automation', {
+            body: { trigger_type: 'stage_changed', contact_id: id, extra: { from: prev.stage, to: updates.stage } },
+          });
+        } catch (e) { console.warn('trigger-automation failed', e); }
+      }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
   });
@@ -379,5 +394,101 @@ export function useUpsertCustomFieldValue() {
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['custom_field_values'] }),
+  });
+}
+
+// === AUTOMATIONS ===
+type Automation = Tables<'automations'>;
+type AutomationStep = Tables<'automation_steps'>;
+type MessageLog = Tables<'message_logs'>;
+
+export function useAutomations() {
+  return useSupabaseQuery<Automation>('automations', 'automations');
+}
+
+export function useInsertAutomation() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (a: Omit<TablesInsert<'automations'>, 'user_id'>) => {
+      const { data, error } = await supabase.from('automations').insert({ ...a, user_id: user!.id }).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['automations'] }),
+  });
+}
+
+export function useUpdateAutomation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: TablesUpdate<'automations'> & { id: string }) => {
+      const { error } = await supabase.from('automations').update(updates).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['automations'] }),
+  });
+}
+
+export function useDeleteAutomation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('automations').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['automations'] }),
+  });
+}
+
+export function useAutomationSteps(automationId?: string) {
+  return useQuery<AutomationStep[]>({
+    queryKey: ['automation_steps', automationId],
+    queryFn: async () => {
+      if (!automationId) return [];
+      const { data, error } = await supabase
+        .from('automation_steps')
+        .select('*')
+        .eq('automation_id', automationId)
+        .order('step_order', { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!automationId,
+  });
+}
+
+export function useReplaceSteps() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ automationId, steps }: { automationId: string; steps: Omit<TablesInsert<'automation_steps'>, 'automation_id'>[] }) => {
+      await supabase.from('automation_steps').delete().eq('automation_id', automationId);
+      if (steps.length > 0) {
+        const { error } = await supabase.from('automation_steps').insert(
+          steps.map((s, i) => ({ ...s, automation_id: automationId, step_order: i }))
+        );
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, { automationId }) => qc.invalidateQueries({ queryKey: ['automation_steps', automationId] }),
+  });
+}
+
+export function useMessageLogs() {
+  const { user } = useAuth();
+  return useQuery<MessageLog[]>({
+    queryKey: ['message_logs', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('message_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user,
   });
 }

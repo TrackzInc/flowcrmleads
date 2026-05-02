@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download } from 'lucide-react';
+import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useContacts } from '@/hooks/useStore';
@@ -28,6 +28,7 @@ const items = [
   { title: 'Tarefas', url: '/tarefas', icon: CheckSquare },
   { title: 'Calendário', url: '/calendario', icon: CalendarDays },
   { title: 'Serviços', url: '/servicos', icon: Briefcase },
+  { title: 'Automações', url: '/automacoes', icon: Zap },
 ];
 
 export function AppSidebar() {

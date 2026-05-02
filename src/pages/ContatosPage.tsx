@@ -38,9 +38,10 @@ export default function ContatosPage() {
 
   const [form, setForm] = useState({
     name: '', phone: '', email: '', origin: '', status: 'novo' as ContactStatus, notes: '', nextContactDate: '',
+    optin_email: false, optin_whatsapp: false, tags: '',
   });
 
-  const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', status: 'novo', notes: '', nextContactDate: '' });
+  const resetForm = () => setForm({ name: '', phone: '', email: '', origin: '', status: 'novo', notes: '', nextContactDate: '', optin_email: false, optin_whatsapp: false, tags: '' });
 
   const handleSave = async () => {
     if (!form.name) return;
@@ -49,6 +50,9 @@ export default function ContatosPage() {
         name: form.name, phone: form.phone, email: form.email, origin: form.origin,
         status: form.status, notes: form.notes, next_contact_date: form.nextContactDate || null,
         is_lead: true, stage: 'novo_lead',
+        optin_email: form.optin_email,
+        optin_whatsapp: form.optin_whatsapp,
+        tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
       });
       setOpen(false);
       resetForm();
@@ -175,6 +179,18 @@ export default function ContatosPage() {
                 </div>
                 <div><Label>Próximo Contato</Label><Input type="date" value={form.nextContactDate} onChange={e => setForm(f => ({ ...f, nextContactDate: e.target.value }))} /></div>
                 <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+                <div><Label>Tags (separadas por vírgula)</Label><Input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="quente, vip" /></div>
+                <div className="space-y-2 border rounded-md p-3">
+                  <p className="text-xs font-medium text-muted-foreground">Consentimento (opt-in)</p>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" checked={form.optin_email} onChange={e => setForm(f => ({ ...f, optin_email: e.target.checked }))} />
+                    Aceita receber Email
+                  </label>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" checked={form.optin_whatsapp} onChange={e => setForm(f => ({ ...f, optin_whatsapp: e.target.checked }))} />
+                    Aceita receber WhatsApp
+                  </label>
+                </div>
                 <Button onClick={handleSave} className="w-full" disabled={insertContact.isPending}>Salvar</Button>
               </div>
             </DialogContent>

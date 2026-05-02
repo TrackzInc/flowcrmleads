@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useServices, useInsertService, useUpdateService, useDeleteService } from '@/hooks/useStore';
 import { formatCurrency } from '@/lib/helpers';
 import { Plus, Pencil, Trash2, Briefcase } from 'lucide-react';
@@ -14,6 +16,26 @@ const DEFAULT_SERVICES = [
   'Landing Page', 'Site Institucional', 'Tráfego Pago', 'Designer Freela', 'Consultoria', 'Comissão',
 ];
 
+const RECURRENCE_OPTIONS = [
+  { value: 'unico', label: 'Único', months: 0 },
+  { value: 'mensal', label: 'Mensal', months: 1 },
+  { value: 'trimestral', label: 'Trimestral', months: 3 },
+  { value: 'semestral', label: 'Semestral', months: 6 },
+  { value: 'anual', label: 'Anual', months: 12 },
+];
+
+export const getRecurrenceMonths = (rec: string) =>
+  RECURRENCE_OPTIONS.find(o => o.value === rec)?.months ?? 0;
+
+export const getRecurrenceLabel = (rec: string) =>
+  RECURRENCE_OPTIONS.find(o => o.value === rec)?.label ?? 'Único';
+
+export const annualizedValue = (price: number, recurrence: string) => {
+  const months = getRecurrenceMonths(recurrence);
+  if (months === 0) return price;
+  return price * (12 / months);
+};
+
 export default function ServicosPage() {
   const { data: services = [] } = useServices();
   const insertService = useInsertService();
@@ -22,17 +44,17 @@ export default function ServicosPage() {
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', price: '' });
+  const [form, setForm] = useState({ name: '', price: '', recurrence: 'unico' });
 
-  const resetForm = () => { setForm({ name: '', price: '' }); setEditingId(null); };
+  const resetForm = () => { setForm({ name: '', price: '', recurrence: 'unico' }); setEditingId(null); };
 
   const handleSave = async () => {
     if (!form.name || !form.price) return;
     try {
       if (editingId) {
-        await updateService.mutateAsync({ id: editingId, name: form.name, price: parseFloat(form.price) });
+        await updateService.mutateAsync({ id: editingId, name: form.name, price: parseFloat(form.price), recurrence: form.recurrence });
       } else {
-        await insertService.mutateAsync({ name: form.name, price: parseFloat(form.price) });
+        await insertService.mutateAsync({ name: form.name, price: parseFloat(form.price), recurrence: form.recurrence });
       }
       setOpen(false);
       resetForm();
@@ -41,7 +63,7 @@ export default function ServicosPage() {
 
   const handleEdit = (s: any) => {
     setEditingId(s.id);
-    setForm({ name: s.name, price: String(s.price) });
+    setForm({ name: s.name, price: String(s.price), recurrence: s.recurrence || 'unico' });
     setOpen(true);
   };
 
@@ -59,6 +81,7 @@ export default function ServicosPage() {
   };
 
   const totalRevenuePotential = services.reduce((s, svc) => s + (svc.price || 0), 0);
+  const totalAnnualized = services.reduce((s, svc) => s + annualizedValue(svc.price || 0, (svc as any).recurrence || 'unico'), 0);
 
   return (
     <AppLayout>
@@ -89,6 +112,22 @@ export default function ServicosPage() {
                     <Label>Preço (R$) *</Label>
                     <Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="0,00" />
                   </div>
+                  <div>
+                    <Label>Recorrência *</Label>
+                    <Select value={form.recurrence} onValueChange={v => setForm(f => ({ ...f, recurrence: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {RECURRENCE_OPTIONS.map(o => (
+                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {form.price && form.recurrence !== 'unico' && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Anualizado: {formatCurrency(annualizedValue(parseFloat(form.price) || 0, form.recurrence))}
+                      </p>
+                    )}
+                  </div>
                   <Button onClick={handleSave} className="w-full" disabled={insertService.isPending || updateService.isPending}>
                     Salvar
                   </Button>
@@ -99,9 +138,15 @@ export default function ServicosPage() {
         </div>
 
         <Card>
-          <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">Soma dos Serviços</p>
-            <p className="text-2xl font-bold text-primary">{formatCurrency(totalRevenuePotential)}</p>
+          <CardContent className="pt-4 pb-4 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Soma dos Serviços (preço base)</p>
+              <p className="text-2xl font-bold text-primary">{formatCurrency(totalRevenuePotential)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Receita anualizada potencial</p>
+              <p className="text-2xl font-bold text-success">{formatCurrency(totalAnnualized)}</p>
+            </div>
           </CardContent>
         </Card>
 
@@ -114,8 +159,25 @@ export default function ServicosPage() {
                     <Briefcase className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-sm">{svc.name}</p>
-                    <p className="text-lg font-bold text-primary">{formatCurrency(svc.price)}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm">{svc.name}</p>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {getRecurrenceLabel((svc as any).recurrence || 'unico')}
+                      </Badge>
+                    </div>
+                    <p className="text-lg font-bold text-primary">
+                      {formatCurrency(svc.price)}
+                      {(svc as any).recurrence && (svc as any).recurrence !== 'unico' && (
+                        <span className="text-xs text-muted-foreground font-normal ml-1">
+                          /{getRecurrenceLabel((svc as any).recurrence).toLowerCase()}
+                        </span>
+                      )}
+                    </p>
+                    {(svc as any).recurrence && (svc as any).recurrence !== 'unico' && (
+                      <p className="text-xs text-success">
+                        {formatCurrency(annualizedValue(svc.price, (svc as any).recurrence))}/ano
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
