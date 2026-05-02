@@ -40,6 +40,12 @@ export function useInsertContact() {
     mutationFn: async (contact: Omit<TablesInsert<'contacts'>, 'user_id'>) => {
       const { data, error } = await supabase.from('contacts').insert({ ...contact, user_id: user!.id }).select().single();
       if (error) throw error;
+      // Dispara automações de "novo lead criado"
+      try {
+        await supabase.functions.invoke('trigger-automation', {
+          body: { trigger_type: 'lead_created', contact_id: data.id },
+        });
+      } catch (e) { console.warn('trigger-automation failed', e); }
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
@@ -50,8 +56,17 @@ export function useUpdateContact() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: TablesUpdate<'contacts'> & { id: string }) => {
+      const { data: prev } = await supabase.from('contacts').select('stage').eq('id', id).single();
       const { error } = await supabase.from('contacts').update(updates).eq('id', id);
       if (error) throw error;
+      // Dispara trigger se mudou o stage
+      if (updates.stage && prev && prev.stage !== updates.stage) {
+        try {
+          await supabase.functions.invoke('trigger-automation', {
+            body: { trigger_type: 'stage_changed', contact_id: id, extra: { from: prev.stage, to: updates.stage } },
+          });
+        } catch (e) { console.warn('trigger-automation failed', e); }
+      }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
   });
