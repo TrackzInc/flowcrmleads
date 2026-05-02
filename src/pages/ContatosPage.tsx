@@ -179,6 +179,18 @@ export default function ContatosPage() {
                 </div>
                 <div><Label>Próximo Contato</Label><Input type="date" value={form.nextContactDate} onChange={e => setForm(f => ({ ...f, nextContactDate: e.target.value }))} /></div>
                 <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+                <div><Label>Tags (separadas por vírgula)</Label><Input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="quente, vip" /></div>
+                <div className="space-y-2 border rounded-md p-3">
+                  <p className="text-xs font-medium text-muted-foreground">Consentimento (opt-in)</p>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" checked={form.optin_email} onChange={e => setForm(f => ({ ...f, optin_email: e.target.checked }))} />
+                    Aceita receber Email
+                  </label>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" checked={form.optin_whatsapp} onChange={e => setForm(f => ({ ...f, optin_whatsapp: e.target.checked }))} />
+                    Aceita receber WhatsApp
+                  </label>
+                </div>
                 <Button onClick={handleSave} className="w-full" disabled={insertContact.isPending}>Salvar</Button>
               </div>
             </DialogContent>
