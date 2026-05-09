@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
-import { fireFinanceWebhook } from '@/lib/financeWebhook';
 
 type Contact = Tables<'contacts'>;
 type Transaction = Tables<'transactions'>;
@@ -55,10 +54,9 @@ export function useInsertContact() {
 
 export function useUpdateContact() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   return useMutation({
     mutationFn: async ({ id, ...updates }: TablesUpdate<'contacts'> & { id: string }) => {
-      const { data: prev } = await supabase.from('contacts').select('*').eq('id', id).single();
+      const { data: prev } = await supabase.from('contacts').select('stage').eq('id', id).single();
       const { error } = await supabase.from('contacts').update(updates).eq('id', id);
       if (error) throw error;
       // Dispara trigger se mudou o stage
@@ -68,19 +66,6 @@ export function useUpdateContact() {
             body: { trigger_type: 'stage_changed', contact_id: id, extra: { from: prev.stage, to: updates.stage } },
           });
         } catch (e) { console.warn('trigger-automation failed', e); }
-      }
-      // Webhook gestor financeiro: lead fechado
-      if (updates.stage === 'fechado' && prev?.stage !== 'fechado') {
-        const merged = { ...prev, ...updates, id };
-        fireFinanceWebhook(user?.id, 'lead.closed', {
-          contact_id: id,
-          name: merged.name,
-          email: merged.email,
-          phone: merged.phone,
-          potential_value: merged.potential_value,
-          origin: merged.origin,
-          interest: merged.interest,
-        });
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
@@ -110,16 +95,6 @@ export function useInsertTransaction() {
     mutationFn: async (tx: Omit<TablesInsert<'transactions'>, 'user_id'>) => {
       const { data, error } = await supabase.from('transactions').insert({ ...tx, user_id: user!.id }).select().single();
       if (error) throw error;
-      if (data.type === 'income') {
-        fireFinanceWebhook(user?.id, 'transaction.income', {
-          transaction_id: data.id,
-          amount: data.amount,
-          category: data.category,
-          description: data.description,
-          date: data.date,
-          contact_id: data.contact_id,
-        });
-      }
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),

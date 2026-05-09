@@ -13,7 +13,6 @@ import ProspeccaoPage from "./pages/ProspeccaoPage";
 import ServicosPage from "./pages/ServicosPage";
 import CalendarioPage from "./pages/CalendarioPage";
 import AutomacoesPage from "./pages/AutomacoesPage";
-import ConfiguracoesPage from "./pages/ConfiguracoesPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -45,7 +44,6 @@ const AppRoutes = () => (
     <Route path="/servicos" element={<ProtectedRoute><ServicosPage /></ProtectedRoute>} />
     <Route path="/calendario" element={<ProtectedRoute><CalendarioPage /></ProtectedRoute>} />
     <Route path="/automacoes" element={<ProtectedRoute><AutomacoesPage /></ProtectedRoute>} />
-    <Route path="/configuracoes" element={<ProtectedRoute><ConfiguracoesPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
