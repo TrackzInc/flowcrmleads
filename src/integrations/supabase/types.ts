@@ -161,6 +161,7 @@ export type Database = {
       }
       contacts: {
         Row: {
+          cidade: string | null
           created_at: string
           document_links: Json | null
           email: string | null
@@ -175,6 +176,7 @@ export type Database = {
           origin: string | null
           phone: string | null
           potential_value: number | null
+          segmento: string | null
           stage: string | null
           status: string
           tag: string | null
@@ -183,6 +185,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cidade?: string | null
           created_at?: string
           document_links?: Json | null
           email?: string | null
@@ -197,6 +200,7 @@ export type Database = {
           origin?: string | null
           phone?: string | null
           potential_value?: number | null
+          segmento?: string | null
           stage?: string | null
           status?: string
           tag?: string | null
@@ -205,6 +209,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cidade?: string | null
           created_at?: string
           document_links?: Json | null
           email?: string | null
@@ -219,6 +224,7 @@ export type Database = {
           origin?: string | null
           phone?: string | null
           potential_value?: number | null
+          segmento?: string | null
           stage?: string | null
           status?: string
           tag?: string | null
