@@ -165,6 +165,8 @@ export type Database = {
           created_at: string
           document_links: Json | null
           email: string | null
+          external_id: string | null
+          external_source: string | null
           id: string
           interest: string | null
           is_lead: boolean | null
@@ -189,6 +191,8 @@ export type Database = {
           created_at?: string
           document_links?: Json | null
           email?: string | null
+          external_id?: string | null
+          external_source?: string | null
           id?: string
           interest?: string | null
           is_lead?: boolean | null
@@ -213,6 +217,8 @@ export type Database = {
           created_at?: string
           document_links?: Json | null
           email?: string | null
+          external_id?: string | null
+          external_source?: string | null
           id?: string
           interest?: string | null
           is_lead?: boolean | null
