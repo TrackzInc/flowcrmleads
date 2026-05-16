@@ -294,12 +294,6 @@
                  </Button>
                </div>
              </div>
-             <div className="flex justify-center">
-               <Button variant="ghost" size="sm" onClick={() => setConnected(false)} className="text-muted-foreground">
-                 Desconectar ProspectAI
-               </Button>
-             </div>
-           </div>
          )}
        </div>
      </AppLayout>
