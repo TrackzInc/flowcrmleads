@@ -129,12 +129,19 @@
             <h1 className="text-3xl font-bold tracking-tight">ProspectAi</h1>
             <p className="text-muted-foreground">Gerencie os leads e buscas da ferramenta externa.</p>
           </div>
-           {!connected ? (
-             <Button onClick={() => setLoginOpen(true)} disabled={syncing} className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90">
-               {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon className="mr-2 h-4 w-4" />}
-               Conectar ProspectAI
-             </Button>
-           ) : (
+          {!connected ? (
+            <Button onClick={() => setLoginOpen(true)} disabled={syncing} className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90">
+              {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon className="mr-2 h-4 w-4" />}
+              Conectar ProspectAI
+            </Button>
+          ) : (
+            <Button onClick={handleSync} disabled={syncing} variant="outline">
+              {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              Sincronizar Agora
+            </Button>
+          )}
+        </div>
+
         <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -184,13 +191,6 @@
             </form>
           </DialogContent>
         </Dialog>
-
-            <Button onClick={handleSync} disabled={syncing} variant="outline">
-              {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-              Sincronizar Agora
-            </Button>
-          )}
-        </div>
 
         {connected && (
           <div className="grid md:grid-cols-2 gap-6 mb-8">
