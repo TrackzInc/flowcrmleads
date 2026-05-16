@@ -463,63 +463,6 @@ export type Database = {
         }
         Relationships: []
       }
-      prospectai_leads: {
-        Row: {
-          company_name: string | null
-          created_at: string | null
-          email: string | null
-          id: string
-          name: string
-          phone: string | null
-          segment: string | null
-        }
-        Insert: {
-          company_name?: string | null
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          name: string
-          phone?: string | null
-          segment?: string | null
-        }
-        Update: {
-          company_name?: string | null
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          name?: string
-          phone?: string | null
-          segment?: string | null
-        }
-        Relationships: []
-      }
-      prospectai_searches: {
-        Row: {
-          created_at: string | null
-          id: string
-          query: string
-          results_count: number | null
-          status: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          query: string
-          results_count?: number | null
-          status?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          query?: string
-          results_count?: number | null
-          status?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       services: {
         Row: {
           created_at: string
