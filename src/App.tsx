@@ -1,3 +1,9 @@
+ import AutomacoesPage from "./pages/AutomacoesPage";
+ import ProspectAiPage from "./pages/ProspectAiPage";
+ import AuthPage from "./pages/AuthPage";
+     <Route path="/automacoes" element={<ProtectedRoute><AutomacoesPage /></ProtectedRoute>} />
+     <Route path="/prospectai" element={<ProtectedRoute><ProspectAiPage /></ProtectedRoute>} />
+     <Route path="*" element={<NotFound />} />
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";

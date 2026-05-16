@@ -1,3 +1,8 @@
+ import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap, Globe } from 'lucide-react';
+   { title: 'Serviços', url: '/servicos', icon: Briefcase },
+   { title: 'Automações', url: '/automacoes', icon: Zap },
+   { title: 'ProspectAI', url: '/prospectai', icon: Globe },
+ ];
 import { useMemo } from 'react';
 import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
