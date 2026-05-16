@@ -88,6 +88,18 @@
     }
   };
  
+  const handleDisconnect = () => {
+    setConnected(false);
+    localStorage.removeItem('prospectai_connected');
+    localStorage.removeItem('prospectai_email');
+    setEmail('');
+    setPassword('');
+    toast({
+      title: "Desconectado",
+      description: "Sua conta do ProspectAi foi desvinculada.",
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -101,8 +113,6 @@
 
     setSyncing(true);
     try {
-      // Aqui seria a validação real via API do ProspectAi
-      // Por enquanto, validamos o preenchimento e simulamos a conexão segura
       // Validação real simulada
       setConnected(true);
       localStorage.setItem('prospectai_connected', 'true');
@@ -114,18 +124,6 @@
         description: `Conectado como ${email}. Dados sincronizados.`,
       });
     } catch (error: any) {
-  const handleDisconnect = () => {
-    setConnected(false);
-    localStorage.removeItem('prospectai_connected');
-    localStorage.removeItem('prospectai_email');
-    setEmail('');
-    setPassword('');
-    toast({
-      title: "Desconectado",
-      description: "Sua conta do ProspectAi foi desvinculada.",
-    });
-  };
-
       toast({
         title: "Erro na autenticação",
         description: "E-mail ou senha inválidos no ProspectAi.",
