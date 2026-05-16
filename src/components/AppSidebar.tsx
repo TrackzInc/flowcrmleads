@@ -1,3 +1,4 @@
+   { title: 'ProspectAi', url: '/prospectai', icon: Download },
 import { useMemo } from 'react';
 import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
