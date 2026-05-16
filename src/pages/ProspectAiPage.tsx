@@ -7,6 +7,7 @@
  import { Download, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
  import { useToast } from '@/hooks/use-toast';
  import { useAuth } from '@/contexts/AuthContext';
+ import { AppLayout } from '@/components/AppLayout';
  
  export default function ProspectAiPage() {
    const { data: contacts, isLoading, refetch } = useContacts();
@@ -44,8 +45,9 @@
    };
  
    return (
-     <div className="container mx-auto py-8 space-y-8">
-       <div className="flex justify-between items-center">
+     <AppLayout>
+       <div className="space-y-8">
+         <div className="flex justify-between items-center">
          <div>
            <h1 className="text-3xl font-bold tracking-tight">ProspectAi</h1>
            <p className="text-muted-foreground">Gerencie os leads importados da ferramenta externa.</p>
@@ -108,7 +110,8 @@
              </div>
            )}
          </CardContent>
-       </Card>
-     </div>
+         </Card>
+       </div>
+     </AppLayout>
    );
  }
