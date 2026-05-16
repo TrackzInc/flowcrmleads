@@ -1,6 +1,5 @@
+ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
  import ProspectAiPage from "./pages/ProspectAiPage";
-     <Route path="/prospectai" element={<ProtectedRoute><ProspectAiPage /></ProtectedRoute>} />
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -45,7 +44,8 @@ const AppRoutes = () => (
     <Route path="/tarefas" element={<ProtectedRoute><TarefasPage /></ProtectedRoute>} />
     <Route path="/servicos" element={<ProtectedRoute><ServicosPage /></ProtectedRoute>} />
     <Route path="/calendario" element={<ProtectedRoute><CalendarioPage /></ProtectedRoute>} />
-    <Route path="/automacoes" element={<ProtectedRoute><AutomacoesPage /></ProtectedRoute>} />
+     <Route path="/automacoes" element={<ProtectedRoute><AutomacoesPage /></ProtectedRoute>} />
+     <Route path="/prospectai" element={<ProtectedRoute><ProspectAiPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
