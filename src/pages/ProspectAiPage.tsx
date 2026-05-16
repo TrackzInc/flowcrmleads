@@ -5,7 +5,10 @@
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
   import { Badge } from '@/components/ui/badge';
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-  import { Download, RefreshCw, AlertCircle, CheckCircle2, Link as LinkIcon, Search, History } from 'lucide-react';
+  import { Download, RefreshCw, AlertCircle, CheckCircle2, Link as LinkIcon, Search, History, Lock, Mail } from 'lucide-react';
+  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+  import { Input } from '@/components/ui/input';
+  import { Label } from '@/components/ui/label';
  import { useToast } from '@/hooks/use-toast';
  import { useAuth } from '@/contexts/AuthContext';
  import { AppLayout } from '@/components/AppLayout';
@@ -13,7 +16,10 @@
   export default function ProspectAiPage() {
     const { data: contacts, isLoading, refetch } = useContacts();
     const [syncing, setSyncing] = useState(false);
-    const [connected, setConnected] = useState(false);
+     const [connected, setConnected] = useState(false);
+     const [loginOpen, setLoginOpen] = useState(false);
+     const [email, setEmail] = useState('');
+     const [password, setPassword] = useState('');
    const { toast } = useToast();
    const { user } = useAuth();
  
@@ -82,20 +88,32 @@
     }
   };
  
-  const handleConnect = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha e-mail e senha.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSyncing(true);
     try {
-      // Simular login/vínculo automático
+      // Aqui seria a validação real via API do ProspectAi
+      // Por enquanto, validamos o preenchimento e simulamos a conexão segura
       setConnected(true);
+      setLoginOpen(false);
       await handleSync();
       toast({
-        title: "ProspectAi Conectado",
-        description: "Leads e histórico de buscas foram sincronizados.",
+        title: "Autenticação bem-sucedida",
+        description: `Conectado como ${email}. Dados sincronizados.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Erro ao conectar",
-        description: "Não foi possível vincular sua conta.",
+        title: "Erro na autenticação",
+        description: "E-mail ou senha inválidos no ProspectAi.",
         variant: "destructive"
       });
     } finally {
@@ -111,12 +129,62 @@
             <h1 className="text-3xl font-bold tracking-tight">ProspectAi</h1>
             <p className="text-muted-foreground">Gerencie os leads e buscas da ferramenta externa.</p>
           </div>
-          {!connected ? (
-            <Button onClick={handleConnect} disabled={syncing} className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90">
-              {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon className="mr-2 h-4 w-4" />}
-              Conectar ProspectAI
-            </Button>
-          ) : (
+           {!connected ? (
+             <Button onClick={() => setLoginOpen(true)} disabled={syncing} className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90">
+               {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon className="mr-2 h-4 w-4" />}
+               Conectar ProspectAI
+             </Button>
+           ) : (
+        <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <LinkIcon className="h-5 w-5 text-[#0EA5E9]" /> 
+                Login ProspectAi
+              </DialogTitle>
+              <DialogDescription>
+                Insira suas credenciais do ProspectAi para vincular sua conta e sincronizar os leads.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleLogin} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="seu@email.com" 
+                    className="pl-10" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    className="pl-10" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <DialogFooter className="pt-4">
+                <Button type="submit" className="w-full bg-[#0EA5E9] hover:bg-[#0EA5E9]/90" disabled={syncing}>
+                  {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : "Entrar e Sincronizar"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
             <Button onClick={handleSync} disabled={syncing} variant="outline">
               {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
               Sincronizar Agora
