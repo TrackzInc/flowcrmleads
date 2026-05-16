@@ -113,6 +113,7 @@
         title: "Autenticação bem-sucedida",
         description: `Conectado como ${email}. Dados sincronizados.`,
       });
+    } catch (error: any) {
   const handleDisconnect = () => {
     setConnected(false);
     localStorage.removeItem('prospectai_connected');
@@ -125,7 +126,6 @@
     });
   };
 
-    } catch (error: any) {
       toast({
         title: "Erro na autenticação",
         description: "E-mail ou senha inválidos no ProspectAi.",
