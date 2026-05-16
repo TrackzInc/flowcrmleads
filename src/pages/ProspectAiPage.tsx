@@ -150,10 +150,15 @@
               Conectar ProspectAI
             </Button>
           ) : (
-            <Button onClick={handleSync} disabled={syncing} variant="outline">
-              {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-              Sincronizar Agora
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleSync} disabled={syncing} variant="outline">
+                {syncing ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                Sincronizar Agora
+              </Button>
+              <Button onClick={handleDisconnect} variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
 
