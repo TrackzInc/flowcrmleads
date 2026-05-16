@@ -219,27 +219,38 @@
               <CardContent>
                 <div className="space-y-2">
                   <div className="p-3 rounded-lg bg-muted text-sm flex justify-between items-center">
-                    <span>Empresas de Tecnologia em São Paulo</span>
-                    <Badge variant="secondary">45 resultados</Badge>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Software em Curitiba</span>
+                      <span className="text-xs text-muted-foreground">Localização: PR</span>
+                    </div>
+                    <Badge variant="secondary">32 leads</Badge>
                   </div>
-                  <div className="p-3 rounded-lg bg-muted text-sm flex justify-between items-center opacity-60">
-                    <span>Advogados em Rio de Janeiro</span>
-                    <Badge variant="secondary">12 resultados</Badge>
+                  <div className="p-3 rounded-lg bg-muted text-sm flex justify-between items-center opacity-70">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Restaurantes em Salvador</span>
+                      <span className="text-xs text-muted-foreground">Localização: BA</span>
+                    </div>
+                    <Badge variant="secondary">18 leads</Badge>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-green-500">
+            <Card className="border-l-4 border-l-orange-500">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <History className="h-5 w-5 text-green-500" /> Status da Integração
+                  <History className="h-5 w-5 text-orange-500" /> Fonte de Dados (GitHub)
                 </CardTitle>
-                <CardDescription>Conexão ativa via Lovable cloud</CardDescription>
+                <CardDescription>Sincronizando com TrackzInc/prospectaibr</CardDescription>
               </CardHeader>
-              <CardContent className="flex items-center gap-3 py-4">
-                <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-sm font-medium">Sincronização Automática Ativa</span>
+              <CardContent className="flex flex-col gap-3 py-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <span className="text-xs font-medium">Repositório Conectado</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  https://github.com/TrackzInc/prospectaibr.git
+                </p>
               </CardContent>
             </Card>
           </div>
