@@ -17,32 +17,68 @@
  
    const prospectLeads = contacts?.filter(c => c.external_source === 'prospectai') || [];
  
-   const handleSync = async () => {
-     if (!user) return;
-     setSyncing(true);
-     try {
-       const { data, error } = await supabase.functions.invoke('sync-prospectai', {
-         body: { user_id: user.id }
-       });
- 
-       if (error) throw error;
- 
-       toast({
-         title: "Sincronização concluída",
-         description: `${data.count} leads sincronizados com sucesso.`,
-       });
-       refetch();
-     } catch (error: any) {
-       console.error('Sync error:', error);
-       toast({
-         title: "Erro na sincronização",
-         description: error.message || "Não foi possível sincronizar os leads. Verifique as configurações.",
-         variant: "destructive"
-       });
-     } finally {
-       setSyncing(false);
-     }
-   };
+  const handleSync = async () => {
+    if (!user) return;
+    setSyncing(true);
+    try {
+      // Buscar leads da tabela prospectai_leads (abordagem direta via Lovable cloud)
+      const { data: externalLeads, error: fetchError } = await supabase
+        .from('prospectai_leads' as any)
+        .select('*');
+
+      if (fetchError) throw fetchError;
+
+      if (!externalLeads || externalLeads.length === 0) {
+        toast({
+          title: "Sincronização concluída",
+          description: "Nenhum novo lead encontrado no ProspectAi.",
+        });
+        return;
+      }
+
+      // Mapear leads para a tabela local de contatos
+      const mappedLeads = externalLeads.map((lead: any) => ({
+        user_id: user.id,
+        external_id: lead.id,
+        external_source: 'prospectai',
+        name: lead.name,
+        phone: lead.phone || '',
+        email: lead.email || '',
+        segmento: lead.segment || '',
+        notes: lead.company_name ? `Empresa: ${lead.company_name}` : '',
+        origin: 'ProspectAi',
+        is_lead: true,
+        status: 'novo',
+        stage: 'novo_lead'
+      }));
+
+      // Upsert na tabela local
+      const { data, error: upsertError } = await supabase
+        .from('contacts')
+        .upsert(mappedLeads, { 
+          onConflict: 'user_id,external_source,external_id',
+          ignoreDuplicates: false 
+        })
+        .select('id');
+
+      if (upsertError) throw upsertError;
+
+      toast({
+        title: "Sincronização concluída",
+        description: `${data?.length || 0} leads sincronizados com sucesso do ProspectAi.`,
+      });
+      refetch();
+    } catch (error: any) {
+      console.error('Sync error:', error);
+      toast({
+        title: "Erro na sincronização",
+        description: error.message || "Não foi possível sincronizar os leads do ProspectAi.",
+        variant: "destructive"
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
  
    return (
      <AppLayout>
