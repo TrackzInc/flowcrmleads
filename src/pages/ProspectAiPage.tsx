@@ -1,8 +1,9 @@
  import { useState } from 'react';
  import { useContacts } from '@/hooks/useStore';
  import { supabase } from '@/integrations/supabase/client';
- import { Button } from '@/components/ui/button';
- import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+  import { Button } from '@/components/ui/button';
+  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+  import { Badge } from '@/components/ui/badge';
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
   import { Download, RefreshCw, AlertCircle, CheckCircle2, Link as LinkIcon, Search, History } from 'lucide-react';
  import { useToast } from '@/hooks/use-toast';
