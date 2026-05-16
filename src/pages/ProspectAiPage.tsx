@@ -5,7 +5,7 @@
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
   import { Badge } from '@/components/ui/badge';
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-  import { Download, RefreshCw, AlertCircle, CheckCircle2, Link as LinkIcon, Search, History, Lock, Mail } from 'lucide-react';
+  import { Download, RefreshCw, AlertCircle, CheckCircle2, Link as LinkIcon, Search, History, Lock, Mail, Trash2 } from 'lucide-react';
   import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
   import { Input } from '@/components/ui/input';
   import { Label } from '@/components/ui/label';
@@ -16,9 +16,9 @@
   export default function ProspectAiPage() {
     const { data: contacts, isLoading, refetch } = useContacts();
     const [syncing, setSyncing] = useState(false);
-     const [connected, setConnected] = useState(false);
+     const [connected, setConnected] = useState(localStorage.getItem('prospectai_connected') === 'true');
      const [loginOpen, setLoginOpen] = useState(false);
-     const [email, setEmail] = useState('');
+     const [email, setEmail] = useState(localStorage.getItem('prospectai_email') || '');
      const [password, setPassword] = useState('');
    const { toast } = useToast();
    const { user } = useAuth();
@@ -103,13 +103,28 @@
     try {
       // Aqui seria a validação real via API do ProspectAi
       // Por enquanto, validamos o preenchimento e simulamos a conexão segura
+      // Validação real simulada
       setConnected(true);
+      localStorage.setItem('prospectai_connected', 'true');
+      localStorage.setItem('prospectai_email', email);
       setLoginOpen(false);
       await handleSync();
       toast({
         title: "Autenticação bem-sucedida",
         description: `Conectado como ${email}. Dados sincronizados.`,
       });
+  const handleDisconnect = () => {
+    setConnected(false);
+    localStorage.removeItem('prospectai_connected');
+    localStorage.removeItem('prospectai_email');
+    setEmail('');
+    setPassword('');
+    toast({
+      title: "Desconectado",
+      description: "Sua conta do ProspectAi foi desvinculada.",
+    });
+  };
+
     } catch (error: any) {
       toast({
         title: "Erro na autenticação",
