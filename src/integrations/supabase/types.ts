@@ -463,6 +463,198 @@ export type Database = {
         }
         Relationships: []
       }
+      project_checklist_items: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          label: string
+          position: number
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          label: string
+          position?: number
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          label?: string
+          position?: number
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_checklist_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_comments: {
+        Row: {
+          author_name: string | null
+          content: string
+          created_at: string
+          id: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_comments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_templates: {
+        Row: {
+          checklist: Json
+          created_at: string
+          file_categories: Json
+          id: string
+          is_system: boolean
+          name: string
+          pipeline: Json
+          project_type: string
+          user_id: string | null
+        }
+        Insert: {
+          checklist?: Json
+          created_at?: string
+          file_categories?: Json
+          id?: string
+          is_system?: boolean
+          name: string
+          pipeline?: Json
+          project_type: string
+          user_id?: string | null
+        }
+        Update: {
+          checklist?: Json
+          created_at?: string
+          file_categories?: Json
+          id?: string
+          is_system?: boolean
+          name?: string
+          pipeline?: Json
+          project_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          assignee: string | null
+          company: string | null
+          contact_id: string | null
+          created_at: string
+          deadline: string | null
+          id: string
+          links: Json
+          name: string
+          niche: string | null
+          notes: string | null
+          position: number
+          priority: string
+          progress: number
+          project_type: string
+          stage_changed_at: string
+          start_date: string | null
+          status: string
+          tags: string[]
+          template_id: string | null
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          assignee?: string | null
+          company?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          links?: Json
+          name: string
+          niche?: string | null
+          notes?: string | null
+          position?: number
+          priority?: string
+          progress?: number
+          project_type?: string
+          stage_changed_at?: string
+          start_date?: string | null
+          status?: string
+          tags?: string[]
+          template_id?: string | null
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          assignee?: string | null
+          company?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          links?: Json
+          name?: string
+          niche?: string | null
+          notes?: string | null
+          position?: number
+          priority?: string
+          progress?: number
+          project_type?: string
+          stage_changed_at?: string
+          start_date?: string | null
+          status?: string
+          tags?: string[]
+          template_id?: string | null
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           created_at: string
