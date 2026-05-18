@@ -443,6 +443,14 @@ export default function LeadsPage() {
             leadName={waLead.name}
           />
         )}
+
+        <NewProjectDialog
+          open={projectOpen}
+          onOpenChange={v => { setProjectOpen(v); if (!v) setProjectLead(null); }}
+          initialName={projectLead ? `Projeto - ${projectLead.name}` : ''}
+          initialContactId={projectLead?.id}
+          initialValue={Number(projectLead?.potential_value ?? 0)}
+        />
       </div>
     </AppLayout>
   );
