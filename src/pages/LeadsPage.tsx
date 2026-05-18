@@ -15,6 +15,7 @@ import { Plus, GripVertical, Pencil, MessageCircle, AlertCircle, Clock, X, Chevr
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { WhatsAppTemplateSelector } from '@/components/WhatsAppTemplateSelector';
+import { NewProjectDialog } from '@/components/projects/NewProjectDialog';
 
 const STAGES: LeadStage[] = ['novo_lead', 'contato_iniciado', 'respondeu', 'em_negociacao', 'fechado', 'perdido'];
 
@@ -56,6 +57,8 @@ export default function LeadsPage() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [waOpen, setWaOpen] = useState(false);
   const [waLead, setWaLead] = useState<any>(null);
+  const [projectOpen, setProjectOpen] = useState(false);
+  const [projectLead, setProjectLead] = useState<any>(null);
 
   const [form, setForm] = useState({
     name: '', phone: '', email: '', origin: '', tag: 'frio' as LeadTag, selectedServices: [] as string[],
@@ -171,6 +174,8 @@ export default function LeadsPage() {
           contact_id: dragId,
         });
         toast.success('Tarefa de pós-venda criada automaticamente (30 dias)');
+        setProjectLead(lead);
+        setProjectOpen(true);
       }
     } catch { toast.error('Erro ao mover lead'); }
     setDragId(null);
@@ -438,6 +443,14 @@ export default function LeadsPage() {
             leadName={waLead.name}
           />
         )}
+
+        <NewProjectDialog
+          open={projectOpen}
+          onOpenChange={v => { setProjectOpen(v); if (!v) setProjectLead(null); }}
+          initialName={projectLead ? `Projeto - ${projectLead.name}` : ''}
+          initialContactId={projectLead?.id}
+          initialValue={Number(projectLead?.potential_value ?? 0)}
+        />
       </div>
     </AppLayout>
   );

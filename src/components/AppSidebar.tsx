@@ -1,5 +1,5 @@
  import { useMemo } from 'react';
- import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap, Database } from 'lucide-react';
+ import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap, Database, Kanban } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useContacts } from '@/hooks/useStore';
@@ -21,15 +21,16 @@ import {
 
 const items = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Caixa', url: '/caixa', icon: Wallet },
-  { title: 'Contatos', url: '/contatos', icon: Users },
   { title: 'Leads', url: '/leads', icon: Target },
+  { title: 'Agenda', url: '/calendario', icon: CalendarDays },
+  { title: 'Follow-ups', url: '/tarefas', icon: CheckSquare },
+  { title: 'Clientes', url: '/contatos', icon: Users },
+  { title: 'Projetos', url: '/projetos', icon: Kanban },
+  { title: 'Financeiro', url: '/caixa', icon: Wallet },
   { title: 'Prospecção', url: '/prospeccao', icon: Crosshair },
-  { title: 'Tarefas', url: '/tarefas', icon: CheckSquare },
-  { title: 'Calendário', url: '/calendario', icon: CalendarDays },
   { title: 'Serviços', url: '/servicos', icon: Briefcase },
-   { title: 'Automações', url: '/automacoes', icon: Zap },
-    { title: 'ProspectAi', url: '/prospectai', icon: Database },
+  { title: 'Automações', url: '/automacoes', icon: Zap },
+  { title: 'ProspectAi', url: '/prospectai', icon: Database },
 ];
 
 export function AppSidebar() {

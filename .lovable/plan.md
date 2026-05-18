@@ -1,41 +1,51 @@
-## Plano de Implementação
+## Módulo Projetos — Plano de Implementação
 
-### 1. Banco de Dados (Migrations)
-Criar tabelas no Supabase:
-- `profiles` (id, user_id, name, created_at)
-- `transactions` (id, user_id, type, amount, category, description, date, contact_id)
-- `contacts` (id, user_id, name, phone, email, origin, status, notes, next_contact_date, created_at, tag, interest, stage, is_lead, potential_value)
-- `interactions` (id, user_id, contact_id, date, type, note)
-- `tasks` (id, user_id, contact_id, title, due_date, done, created_at)
-- `message_templates` (id, user_id, name, content, type)
-- RLS policies para todas as tabelas (usuário só vê seus dados)
+Vou criar um módulo operacional completo de Projetos, integrado ao CRM atual (Lovable Cloud / Supabase). Por ser uma feature grande, proponho entregar em **3 fases incrementais** para garantir qualidade e poder validar contigo a cada etapa.
 
-### 2. Autenticação
-- Criar `src/integrations/supabase/client.ts`
-- Criar `src/contexts/AuthContext.tsx`
-- Criar `src/pages/AuthPage.tsx` (login/cadastro)
-- Proteger rotas no `App.tsx`
+---
 
-### 3. Data Layer (migrar localStorage → Supabase)
-- Atualizar `src/hooks/useStore.ts` para usar queries Supabase
-- Usar React Query para cache/fetch
+### Fase 1 — Fundação + Kanban + Integração com Leads
 
-### 4. Edição de Leads
-- Adicionar modal de edição em `LeadsPage.tsx`
-- Campo `potential_value` (valor potencial R$)
+**Backend (migrations)**
+- Tabela `projects`: nome, cliente (contact_id), empresa, nicho, tipo, valor, data início, prazo, prioridade, responsável, status (coluna kanban), progresso, tags, posição, observações, links rápidos (figma/drive/domínio/hospedagem/site), template usado, timestamps por estágio (para "tempo parado").
+- Tabela `project_checklist_items`: item, concluído, ordem.
+- Tabela `project_comments`: texto, autor, timestamp (timeline).
+- Tabela `project_templates`: nome, tipo, pipeline (jsonb), checklist (jsonb), categorias de arquivos (jsonb).
+- Tabela `project_files`: nome, tamanho, categoria, URL, é_pendente_cliente.
+- Tabela `project_files_pending`: itens pendentes do cliente (logo, fotos, textos…).
+- RLS em todas, isoladas por `user_id`.
+- Seed dos 5 templates iniciais (Site institucional, Landing Page, Identidade Visual, E-commerce, Personalizado).
 
-### 5. WhatsApp Fix
-- Corrigir `whatsappLink()` para sempre incluir código 55
-- Limpar formatação do número
+**Frontend**
+- Reorganizar sidebar na ordem pedida: Dashboard, Leads, Agenda, Follow-ups, Clientes, **Projetos**, Financeiro, Configurações (mapeando para as páginas existentes — ex: Caixa → Financeiro, Calendário → Agenda).
+- Página `/projetos` com Kanban (11 colunas), drag-and-drop (`@dnd-kit`), cards com: prazo, prioridade, responsável, barra de progresso, tags, tempo parado, badge de atraso.
+- Modal "Novo Projeto" com seleção de template.
+- Modal/drawer de detalhes do projeto: informações, links rápidos, checklist dinâmica, comentários (timeline), arquivos.
+- Hook automático: quando um Lead muda para estágio `fechado`, abrir modal "Escolha template para criar projeto" e gerar projeto completo (pipeline + checklist + categorias).
 
-### 6. Follow-ups / Tarefas
-- Atualizar `TarefasPage.tsx` com separação: atrasados, hoje, futuros
-- Mostrar nome do lead, valor potencial, status
-- Ações: marcar como feito, atualizar próxima data
+### Fase 2 — Visualizações múltiplas + Templates editáveis
 
-### 7. Dashboard com Métricas
-- Total de leads por status
-- Soma de valor potencial vs realizado
-- Taxa de conversão
-- Gráfico de leads por status
-- Gráfico potencial vs realizado
+- Toggle de visualização: Kanban / Lista / Tabela / Calendário (mesma fonte de dados).
+- CRUD completo de templates (criar, duplicar, editar, salvar fluxo próprio).
+- Página "Cliente" expandida: abas Projetos ativos / anteriores / Pagamentos / Reuniões / Histórico.
+
+### Fase 3 — Arquivos + Alertas + Polimento
+
+- Sistema de arquivos com Lovable Cloud Storage: upload múltiplo, drag-and-drop, miniaturas, categorias, links externos, área "Arquivos pendentes do cliente".
+- Sistema de alertas no Dashboard: projeto parado X dias, atrasado, briefing pendente, cliente sem resposta.
+- Busca global, filtros rápidos, refinamentos visuais (animações Trello/Linear/Notion), tema claro/escuro polido.
+
+---
+
+### Detalhes técnicos
+- Stack: React + Vite + Tailwind + shadcn (já em uso); `@dnd-kit/core` para drag-and-drop; `date-fns` para cálculos de tempo parado/atraso; React Query para cache.
+- Templates armazenados no banco (jsonb) — fácil de editar sem deploy.
+- "Tempo parado": coluna `stage_changed_at` atualizada via trigger ao mover de status.
+- Storage: bucket `project-files` no Lovable Cloud, com RLS por `user_id` no path.
+- Reaproveita `contacts` (clientes) e `tasks` existentes — sem duplicar dados.
+
+---
+
+### Confirmação
+
+Posso começar pela **Fase 1** agora? Ela já entrega o valor principal: Kanban funcional, criação por template e automação Lead-Fechado → Projeto. Depois seguimos para 2 e 3.
