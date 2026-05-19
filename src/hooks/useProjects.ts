@@ -318,16 +318,23 @@ export async function createProjectFromTemplate(opts: {
     ? (opts.template.checklist as any[])
     : [];
   if (rawChecklist.length > 0) {
-    const rows = rawChecklist.map((item, idx) => ({
-      project_id: project.id,
-      user_id: opts.user_id,
-      label: typeof item === 'string' ? item : (item.label || ''),
-      position: idx,
-    }));
-    const { error: chkErr } = await supabase
-      .from('project_checklist_items')
-      .insert(rows);
-    if (chkErr) throw chkErr;
+    const rows = rawChecklist.map((item, idx) => {
+      // Handle both string items and object items { label: string }
+      const label = typeof item === 'string' ? item : (item.label || '');
+      return {
+        project_id: project.id,
+        user_id: opts.user_id,
+        label: label,
+        position: idx,
+      };
+    }).filter(row => row.label.trim() !== '');
+
+    if (rows.length > 0) {
+      const { error: chkErr } = await supabase
+        .from('project_checklist_items')
+        .insert(rows);
+      if (chkErr) throw chkErr;
+    }
   }
 
   return project;
