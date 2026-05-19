@@ -24,17 +24,17 @@ export const PROJECT_STAGES = [
 export type ProjectStage = (typeof PROJECT_STAGES)[number];
 
 export const PROJECT_STAGE_LABELS: Record<ProjectStage, string> = {
-  aguardando_pagamento: 'Aguardando pagamento',
-  briefing_pendente: 'Briefing pendente',
-  briefing_recebido: 'Briefing recebido',
+  aguardando_pagamento: 'Aguardando Pagamento',
+  briefing_pendente: 'Briefing Pendente',
+  briefing_recebido: 'Briefing Recebido',
   wireframe: 'Wireframe',
   design: 'Design',
   desenvolvimento: 'Desenvolvimento',
   revisao: 'Revisão',
   ajustes: 'Ajustes',
-  aguardando_cliente: 'Aguardando cliente',
+  aguardando_cliente: 'Aguardando Cliente',
   entregue: 'Entregue',
-  pos_venda: 'Pós-venda',
+  pos_venda: 'Pós Venda',
 };
 
 export const PROJECT_STAGE_COLORS: Record<ProjectStage, string> = {
