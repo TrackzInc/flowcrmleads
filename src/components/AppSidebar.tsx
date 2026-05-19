@@ -1,5 +1,5 @@
- import { useMemo } from 'react';
- import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap, Database, Kanban, Settings } from 'lucide-react';
+import { useMemo } from 'react';
+import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap, Database, Kanban, Settings } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useContacts } from '@/hooks/useStore';
@@ -32,10 +32,6 @@ const items = [
   { title: 'Serviços', url: '/servicos', icon: Briefcase },
   { title: 'Automações', url: '/automacoes', icon: Zap },
   { title: 'ProspectAi', url: '/prospectai', icon: Database },
-];
-
-const configItems = [
-  { title: 'Templates', url: '/configuracoes/templates', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -82,8 +78,9 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <ExportButton />
-      </SidebarFooter>
+      </SidebarContent>
+      <SidebarFooter className="p-3">
+        {!collapsed && <ExportButton />}
         {!collapsed && user && (
           <p className="text-xs text-sidebar-muted truncate my-2">{user.email}</p>
         )}
