@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import {
   Project,
   useProjectChecklist,
@@ -18,6 +31,10 @@ import {
   useInsertComment,
   useUpdateProject,
   useDeleteProject,
+  useProjectFiles,
+  useUploadProjectFile,
+  useDeleteProjectFile,
+  FileCategoriesMetadata,
 } from '@/hooks/useProjects';
 import {
   PROJECT_STAGE_LABELS,
@@ -26,9 +43,29 @@ import {
   ProjectPriority,
   daysBetween,
 } from '@/lib/projectConstants';
-import { Trash2, Plus, Figma, FolderOpen, Globe, Server, Link as LinkIcon } from 'lucide-react';
+import {
+  Trash2,
+  Plus,
+  Figma,
+  FolderOpen,
+  Globe,
+  Server,
+  Link as LinkIcon,
+  FileIcon,
+  FileText,
+  FileImage,
+  FileArchive,
+  Download,
+  AlertCircle,
+  UploadCloud,
+  X,
+  MessageSquare,
+  CheckCircle2,
+  Paperclip,
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { formatCurrency } from '@/lib/helpers';
+import { formatCurrency, formatFileSize } from '@/lib/helpers';
+import { supabase } from '@/integrations/supabase/client';
 
 type Props = {
   project: Project | null;
