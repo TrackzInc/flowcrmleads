@@ -16,6 +16,7 @@ import ServicosPage from "./pages/ServicosPage";
 import CalendarioPage from "./pages/CalendarioPage";
 import AutomacoesPage from "./pages/AutomacoesPage";
 import AuthPage from "./pages/AuthPage";
+import ConfigTemplatesPage from "./pages/ConfigTemplatesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const AppRoutes = () => (
      <Route path="/automacoes" element={<ProtectedRoute><AutomacoesPage /></ProtectedRoute>} />
      <Route path="/prospectai" element={<ProtectedRoute><ProspectAiPage /></ProtectedRoute>} />
     <Route path="/projetos" element={<ProtectedRoute><ProjetosPage /></ProtectedRoute>} />
+    <Route path="/configuracoes/templates" element={<ProtectedRoute><ConfigTemplatesPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
