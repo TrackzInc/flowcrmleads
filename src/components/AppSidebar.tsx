@@ -1,5 +1,5 @@
  import { useMemo } from 'react';
- import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap, Database, Kanban } from 'lucide-react';
+ import { LayoutDashboard, Wallet, Users, Target, CheckSquare, LogOut, Crosshair, Briefcase, CalendarDays, Download, Zap, Database, Kanban, Settings } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useContacts } from '@/hooks/useStore';
