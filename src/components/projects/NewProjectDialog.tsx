@@ -20,6 +20,7 @@ type Props = {
   initialContactId?: string;
   initialCompany?: string;
   initialValue?: number;
+  sourceLeadStage?: string;
 };
 
 export function NewProjectDialog({
@@ -29,6 +30,7 @@ export function NewProjectDialog({
   initialContactId,
   initialCompany = '',
   initialValue = 0,
+  sourceLeadStage,
 }: Props) {
   const { data: templates = [] } = useProjectTemplates();
   const { data: contacts = [] } = useContacts();
@@ -74,6 +76,7 @@ export function NewProjectDialog({
         company,
         value,
         notes,
+        source_lead_stage: sourceLeadStage,
       });
 
       // If created from a lead, link it back to the contact
