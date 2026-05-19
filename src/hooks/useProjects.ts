@@ -217,14 +217,14 @@ export async function createProjectFromTemplate(opts: {
     .single();
   if (projErr) throw projErr;
 
-  const checklist = Array.isArray(opts.template.checklist)
-    ? (opts.template.checklist as string[])
+  const rawChecklist = Array.isArray(opts.template.checklist)
+    ? (opts.template.checklist as any[])
     : [];
-  if (checklist.length > 0) {
-    const rows = checklist.map((label, idx) => ({
+  if (rawChecklist.length > 0) {
+    const rows = rawChecklist.map((item, idx) => ({
       project_id: project.id,
       user_id: opts.user_id,
-      label,
+      label: typeof item === 'string' ? item : (item.label || ''),
       position: idx,
     }));
     const { error: chkErr } = await supabase
