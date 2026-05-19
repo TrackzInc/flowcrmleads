@@ -178,6 +178,7 @@ export type Database = {
           origin: string | null
           phone: string | null
           potential_value: number | null
+          project_id: string | null
           segmento: string | null
           stage: string | null
           status: string
@@ -204,6 +205,7 @@ export type Database = {
           origin?: string | null
           phone?: string | null
           potential_value?: number | null
+          project_id?: string | null
           segmento?: string | null
           stage?: string | null
           status?: string
@@ -230,6 +232,7 @@ export type Database = {
           origin?: string | null
           phone?: string | null
           potential_value?: number | null
+          project_id?: string | null
           segmento?: string | null
           stage?: string | null
           status?: string
@@ -238,7 +241,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contacts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_field_values: {
         Row: {

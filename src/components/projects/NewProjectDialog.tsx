@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 type Props = {
   open: boolean;
@@ -65,7 +66,7 @@ export function NewProjectDialog({
     if (!template) return;
     setSaving(true);
     try {
-      await createProjectFromTemplate({
+      const project = await createProjectFromTemplate({
         user_id: user.id,
         template,
         name,
@@ -74,8 +75,18 @@ export function NewProjectDialog({
         value,
         notes,
       });
+
+      // If created from a lead, link it back to the contact
+      if (contactId) {
+        await supabase
+          .from('contacts')
+          .update({ project_id: project.id })
+          .eq('id', contactId);
+      }
+
       toast.success('Projeto criado!');
       qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['contacts'] });
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message || 'Erro ao criar projeto');

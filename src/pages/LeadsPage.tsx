@@ -159,13 +159,23 @@ export default function LeadsPage() {
   const handleDrop = async (stage: LeadStage) => {
     if (!dragId) return;
     const lead = leads.find(l => l.id === dragId);
+    if (!lead) return;
+
     try {
       await updateContact.mutateAsync({
-        id: dragId, stage,
+        id: dragId, 
+        stage,
         status: stage === 'fechado' ? 'fechado' : stage === 'perdido' ? 'perdido' : undefined,
       });
+
+      // Automation: Create project if moving to 'em_negociacao' or 'fechado' and no project exists
+      if ((stage === 'em_negociacao' || stage === 'fechado') && !lead.project_id) {
+        setProjectLead(lead);
+        setProjectOpen(true);
+      }
+
       // Post-sale automation: create follow-up task 30 days after closing
-      if (stage === 'fechado' && lead) {
+      if (stage === 'fechado') {
         const followUpDate = new Date();
         followUpDate.setDate(followUpDate.getDate() + 30);
         await insertTask.mutateAsync({
@@ -174,10 +184,10 @@ export default function LeadsPage() {
           contact_id: dragId,
         });
         toast.success('Tarefa de pós-venda criada automaticamente (30 dias)');
-        setProjectLead(lead);
-        setProjectOpen(true);
       }
-    } catch { toast.error('Erro ao mover lead'); }
+    } catch { 
+      toast.error('Erro ao mover lead'); 
+    }
     setDragId(null);
   };
 
