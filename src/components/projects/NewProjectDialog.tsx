@@ -130,7 +130,7 @@ export function NewProjectDialog({
                     <div className="text-sm font-medium">{t.name}</div>
                     <div className="text-xs text-muted-foreground capitalize">{t.project_type}</div>
                     <div className="text-[10px] text-muted-foreground mt-1">
-                      {(t.checklist as string[] | null)?.length ?? 0} itens na checklist
+                      {(t.checklist as any[])?.length ?? 0} itens na checklist
                     </div>
                   </Card>
                 );
