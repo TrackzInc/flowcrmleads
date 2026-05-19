@@ -1,0 +1,1 @@
+ALTER TABLE public.project_templates ADD COLUMN IF NOT EXISTS lead_stage_mappings JSONB DEFAULT '{"em_negociacao": "aguardando_pagamento", "fechado": "briefing"}'::jsonb;
