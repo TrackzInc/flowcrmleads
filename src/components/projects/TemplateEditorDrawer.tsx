@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
@@ -82,6 +83,10 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
   const [checklist, setChecklist] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [fileCategories, setFileCategories] = useState<any[]>([]);
+  const [leadStageMappings, setLeadStageMappings] = useState<Record<string, string>>({
+    em_negociacao: 'aguardando_pagamento',
+    fechado: 'briefing'
+  });
 
   const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: {
@@ -100,6 +105,10 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
       setChecklist(template.checklist || []);
       setTasks(template.tasks || []);
       setFileCategories(template.file_categories || []);
+      setLeadStageMappings(template.lead_stage_mappings || {
+        em_negociacao: 'aguardando_pagamento',
+        fechado: 'briefing'
+      });
     } else {
       reset({
         name: '',
@@ -109,6 +118,10 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
       setChecklist([]);
       setTasks([]);
       setFileCategories([]);
+      setLeadStageMappings({
+        em_negociacao: 'aguardando_pagamento',
+        fechado: 'briefing'
+      });
     }
   }, [template, reset]);
 
@@ -120,6 +133,7 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
         checklist,
         tasks,
         file_categories: fileCategories,
+        lead_stage_mappings: leadStageMappings,
         project_type: 'custom', // Default for user templates
         user_id: (await supabase.auth.getUser()).data.user?.id,
       };
@@ -188,9 +202,10 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
 
           <form onSubmit={handleSubmit((data) => saveMutation.mutate(data))} className="flex-1 overflow-hidden flex flex-col">
             <Tabs defaultValue="geral" className="flex-1 flex flex-col overflow-hidden px-6">
-              <TabsList className="grid grid-cols-5 mb-6">
+              <TabsList className="grid grid-cols-6 mb-6">
                 <TabsTrigger value="geral">Geral</TabsTrigger>
                 <TabsTrigger value="kanban">Kanban</TabsTrigger>
+                <TabsTrigger value="automacao">Automação</TabsTrigger>
                 <TabsTrigger value="checklist">Checklist</TabsTrigger>
                 <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
                 <TabsTrigger value="arquivos">Arquivos</TabsTrigger>
@@ -228,6 +243,58 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
                   <Button type="button" variant="outline" size="sm" className="w-full mt-2 gap-2" onClick={() => addItem(setPipeline, `Nova Etapa ${pipeline.length + 1}`)}>
                     <Plus className="h-4 w-4" /> Adicionar Etapa
                   </Button>
+                </TabsContent>
+
+                <TabsContent value="automacao" className="space-y-6 pt-2">
+                  <div className="bg-slate-50 p-4 rounded-lg border">
+                    <h4 className="text-sm font-semibold mb-3">Mapeamento Lead → Projeto</h4>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Defina qual status o card de projeto deve assumir quando for criado a partir de um Lead.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 items-center">
+                        <Label className="text-sm">Se Lead mudar para: <b>Em Negociação</b></Label>
+                        <Select 
+                          value={leadStageMappings.em_negociacao} 
+                          onValueChange={(val) => setLeadStageMappings(prev => ({ ...prev, em_negociacao: val }))}
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue placeholder="Selecione o status inicial" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {pipeline.map(step => (
+                              <SelectItem key={step} value={step}>{step}</SelectItem>
+                            ))}
+                            {/* Fallback steps if pipeline is empty or custom */}
+                            {!pipeline.includes('aguardando_pagamento') && (
+                              <SelectItem value="aguardando_pagamento">Aguardando Pagamento</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 items-center">
+                        <Label className="text-sm">Se Lead mudar para: <b>Fechado</b></Label>
+                        <Select 
+                          value={leadStageMappings.fechado} 
+                          onValueChange={(val) => setLeadStageMappings(prev => ({ ...prev, fechado: val }))}
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue placeholder="Selecione o status inicial" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {pipeline.map(step => (
+                              <SelectItem key={step} value={step}>{step}</SelectItem>
+                            ))}
+                            {!pipeline.includes('briefing') && (
+                              <SelectItem value="briefing">Briefing</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="checklist" className="pt-2">

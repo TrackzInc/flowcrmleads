@@ -59,6 +59,7 @@ export default function LeadsPage() {
   const [waLead, setWaLead] = useState<any>(null);
   const [projectOpen, setProjectOpen] = useState(false);
   const [projectLead, setProjectLead] = useState<any>(null);
+  const [currentLeadStage, setCurrentLeadStage] = useState<string | undefined>();
 
   const [form, setForm] = useState({
     name: '', phone: '', email: '', origin: '', tag: 'frio' as LeadTag, selectedServices: [] as string[],
@@ -171,6 +172,7 @@ export default function LeadsPage() {
       // Automation: Create project if moving to 'em_negociacao' or 'fechado' and no project exists
       if ((stage === 'em_negociacao' || stage === 'fechado') && !lead.project_id) {
         setProjectLead(lead);
+        setCurrentLeadStage(stage);
         setProjectOpen(true);
       }
 
@@ -460,6 +462,7 @@ export default function LeadsPage() {
           initialName={projectLead ? `Projeto - ${projectLead.name}` : ''}
           initialContactId={projectLead?.id}
           initialValue={Number(projectLead?.potential_value ?? 0)}
+          sourceLeadStage={currentLeadStage}
         />
       </div>
     </AppLayout>

@@ -287,11 +287,19 @@ export async function createProjectFromTemplate(opts: {
   company?: string;
   value?: number;
   notes?: string;
+  source_lead_stage?: string; // Optional: lead stage that triggered this
 }) {
   const pipeline = Array.isArray(opts.template.pipeline)
     ? (opts.template.pipeline as string[])
     : [];
-  const initialStatus = pipeline[0] ?? 'aguardando_pagamento';
+  
+  // Custom mapping based on source lead stage
+  const mapping = (opts.template.lead_stage_mappings as Record<string, string>) || {};
+  let initialStatus = pipeline[0] || 'aguardando_pagamento';
+
+  if (opts.source_lead_stage && mapping[opts.source_lead_stage]) {
+    initialStatus = mapping[opts.source_lead_stage];
+  }
 
   const { data: project, error: projErr } = await supabase
     .from('projects')

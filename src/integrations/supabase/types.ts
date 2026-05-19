@@ -599,6 +599,7 @@ export type Database = {
           file_categories: Json
           id: string
           is_system: boolean
+          lead_stage_mappings: Json | null
           name: string
           pipeline: Json
           project_type: string
@@ -612,6 +613,7 @@ export type Database = {
           file_categories?: Json
           id?: string
           is_system?: boolean
+          lead_stage_mappings?: Json | null
           name: string
           pipeline?: Json
           project_type: string
@@ -625,6 +627,7 @@ export type Database = {
           file_categories?: Json
           id?: string
           is_system?: boolean
+          lead_stage_mappings?: Json | null
           name?: string
           pipeline?: Json
           project_type?: string
