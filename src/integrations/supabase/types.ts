@@ -540,34 +540,40 @@ export type Database = {
         Row: {
           checklist: Json
           created_at: string
+          default_duration_days: number | null
           file_categories: Json
           id: string
           is_system: boolean
           name: string
           pipeline: Json
           project_type: string
+          tasks: Json
           user_id: string | null
         }
         Insert: {
           checklist?: Json
           created_at?: string
+          default_duration_days?: number | null
           file_categories?: Json
           id?: string
           is_system?: boolean
           name: string
           pipeline?: Json
           project_type: string
+          tasks?: Json
           user_id?: string | null
         }
         Update: {
           checklist?: Json
           created_at?: string
+          default_duration_days?: number | null
           file_categories?: Json
           id?: string
           is_system?: boolean
           name?: string
           pipeline?: Json
           project_type?: string
+          tasks?: Json
           user_id?: string | null
         }
         Relationships: []
