@@ -574,5 +574,4 @@ export function ProjectDetailDrawer({ project, open, onOpenChange }: Props) {
       </SheetContent>
     </Sheet>
   );
-  );
 }
