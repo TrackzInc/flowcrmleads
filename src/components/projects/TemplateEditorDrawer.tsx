@@ -177,14 +177,14 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
   };
 
   return (
-    <ShadcnDrawer open={open} onOpenChange={onOpenChange}>
-      <ShadcnDrawerContent className="max-h-[90vh]">
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="max-h-[90vh]">
         <div className="mx-auto w-full max-w-4xl overflow-hidden flex flex-col h-full">
-          <ShadcnDrawerHeader>
-            <ShadcnDrawerTitle>
+          <DrawerHeader>
+            <DrawerTitle>
               {template ? `Editar Template: ${template.name}` : 'Novo Template de Projeto'}
-            </ShadcnDrawerTitle>
-          </ShadcnDrawerHeader>
+            </DrawerTitle>
+          </DrawerHeader>
 
           <form onSubmit={handleSubmit((data) => saveMutation.mutate(data))} className="flex-1 overflow-hidden flex flex-col">
             <Tabs defaultValue="geral" className="flex-1 flex flex-col overflow-hidden px-6">
@@ -335,7 +335,7 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
               </ScrollArea>
             </Tabs>
 
-            <ShadcnDrawerFooter className="px-6 border-t mt-auto">
+            <DrawerFooter className="px-6 border-t mt-auto">
               <div className="flex gap-3 justify-end w-full">
                 <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                   Cancelar
@@ -344,10 +344,10 @@ export function TemplateEditorDrawer({ open, onOpenChange, template }: any) {
                   {saveMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>
-            </ShadcnDrawerFooter>
+            </DrawerFooter>
           </form>
         </div>
-      </ShadcnDrawerContent>
-    </ShadcnDrawer>
+      </DrawerContent>
+    </Drawer>
   );
 }
