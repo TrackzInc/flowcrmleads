@@ -26,6 +26,7 @@ const items = [
   { title: 'Follow-ups', url: '/tarefas', icon: CheckSquare },
   { title: 'Clientes', url: '/contatos', icon: Users },
   { title: 'Projetos', url: '/projetos', icon: Kanban },
+  { title: 'Templates', url: '/configuracoes/templates', icon: Settings },
   { title: 'Financeiro', url: '/caixa', icon: Wallet },
   { title: 'Prospecção', url: '/prospeccao', icon: Crosshair },
   { title: 'Serviços', url: '/servicos', icon: Briefcase },
@@ -34,7 +35,7 @@ const items = [
 ];
 
 const configItems = [
-  { title: 'Configurações', url: '/configuracoes/templates', icon: Settings },
+  { title: 'Templates', url: '/configuracoes/templates', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -81,29 +82,8 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {configItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="hover:bg-sidebar-accent/50 relative"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
-                      <item.icon className="mr-2 h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter className="p-3">
-        {!collapsed && <ExportButton />}
+        <ExportButton />
+      </SidebarFooter>
         {!collapsed && user && (
           <p className="text-xs text-sidebar-muted truncate my-2">{user.email}</p>
         )}
