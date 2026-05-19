@@ -65,7 +65,7 @@ export function NewProjectDialog({
     if (!template) return;
     setSaving(true);
     try {
-      await createProjectFromTemplate({
+      const project = await createProjectFromTemplate({
         user_id: user.id,
         template,
         name,
@@ -74,8 +74,18 @@ export function NewProjectDialog({
         value,
         notes,
       });
+
+      // If created from a lead, link it back to the contact
+      if (contactId) {
+        await supabase
+          .from('contacts')
+          .update({ project_id: project.id })
+          .eq('id', contactId);
+      }
+
       toast.success('Projeto criado!');
       qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['contacts'] });
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message || 'Erro ao criar projeto');
