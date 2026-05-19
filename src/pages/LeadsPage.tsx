@@ -462,6 +462,7 @@ export default function LeadsPage() {
           initialName={projectLead ? `Projeto - ${projectLead.name}` : ''}
           initialContactId={projectLead?.id}
           initialValue={Number(projectLead?.potential_value ?? 0)}
+          sourceLeadStage={currentLeadStage}
         />
       </div>
     </AppLayout>
