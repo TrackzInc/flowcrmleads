@@ -629,6 +629,7 @@ export type Database = {
           contact_id: string | null
           created_at: string
           deadline: string | null
+          file_categories: string[] | null
           file_categories_metadata: Json | null
           id: string
           links: Json
@@ -654,6 +655,7 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           deadline?: string | null
+          file_categories?: string[] | null
           file_categories_metadata?: Json | null
           id?: string
           links?: Json
@@ -679,6 +681,7 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           deadline?: string | null
+          file_categories?: string[] | null
           file_categories_metadata?: Json | null
           id?: string
           links?: Json
