@@ -306,6 +306,9 @@ export async function createProjectFromTemplate(opts: {
       template_id: opts.template.id,
       status: initialStatus,
       start_date: new Date().toISOString().slice(0, 10),
+      file_categories: Array.isArray(opts.template.file_categories) 
+        ? (opts.template.file_categories as string[]) 
+        : [],
     })
     .select()
     .single();
