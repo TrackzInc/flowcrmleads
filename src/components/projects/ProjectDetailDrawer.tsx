@@ -76,12 +76,19 @@ type Props = {
 export function ProjectDetailDrawer({ project, open, onOpenChange }: Props) {
   const { data: checklist = [] } = useProjectChecklist(project?.id);
   const { data: comments = [] } = useProjectComments(project?.id);
+  const { data: files = [] } = useProjectFiles(project?.id);
+
   const insertItem = useInsertChecklistItem();
   const updateItem = useUpdateChecklistItem();
   const deleteItem = useDeleteChecklistItem();
   const insertComment = useInsertComment();
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
+  const uploadFile = useUploadProjectFile();
+  const deleteFile = useDeleteProjectFile();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const [newItem, setNewItem] = useState('');
   const [newComment, setNewComment] = useState('');
@@ -90,6 +97,19 @@ export function ProjectDetailDrawer({ project, open, onOpenChange }: Props) {
 
   const completed = checklist.filter(c => c.done).length;
   const progress = checklist.length ? Math.round((completed / checklist.length) * 100) : project.progress ?? 0;
+
+  const categories = (project.file_categories as string[]) || [];
+  const metadata = (project.file_categories_metadata as FileCategoriesMetadata) || {};
+
+  const pendingCategories = categories.filter(cat => (metadata[cat]?.status || 'Pendente') === 'Pendente');
+
+  const getFileIcon = (contentType?: string | null) => {
+    if (!contentType) return FileIcon;
+    if (contentType.startsWith('image/')) return FileImage;
+    if (contentType.includes('pdf')) return FileText;
+    if (contentType.includes('zip') || contentType.includes('rar')) return FileArchive;
+    return FileText;
+  };
 
   const links = (project.links as Record<string, string>) ?? {};
 
