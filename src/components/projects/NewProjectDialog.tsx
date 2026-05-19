@@ -49,7 +49,10 @@ export function NewProjectDialog({
       setCompany(initialCompany);
       setValue(initialValue);
       setNotes('');
-      setTemplateId(templates[0]?.id);
+      // Always ensure a template is selected if available
+      if (templates.length > 0) {
+        setTemplateId(templates[0].id);
+      }
     }
   }, [open, initialName, initialContactId, initialCompany, initialValue, templates]);
 
