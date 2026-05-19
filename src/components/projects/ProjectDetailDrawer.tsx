@@ -572,7 +572,7 @@ export function ProjectDetailDrawer({ project, open, onOpenChange }: Props) {
           </div>
         </div>
       </SheetContent>
-      </SheetContent>
     </Sheet>
+  );
   );
 }
