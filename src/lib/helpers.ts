@@ -28,3 +28,11 @@ export function isOverdue(dateStr?: string | null) {
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR');
 }
+
+export function formatFileSize(bytes?: number | null) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}

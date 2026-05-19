@@ -7,6 +7,14 @@ export type Project = Tables<'projects'>;
 export type ProjectChecklistItem = Tables<'project_checklist_items'>;
 export type ProjectComment = Tables<'project_comments'>;
 export type ProjectTemplate = Tables<'project_templates'>;
+export type ProjectFile = Tables<'project_files'>;
+
+export type CategoryMetadata = {
+  status: 'Pendente' | 'Recebido' | 'Em revisão' | 'Aprovado';
+  observation: string;
+};
+
+export type FileCategoriesMetadata = Record<string, CategoryMetadata>;
 
 export function useProjects() {
   const { user } = useAuth();
@@ -182,6 +190,92 @@ export function useInsertComment() {
   });
 }
 
+export function useProjectFiles(projectId?: string) {
+  const { user } = useAuth();
+  return useQuery<ProjectFile[]>({
+    queryKey: ['project_files', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+      const { data, error } = await supabase
+        .from('project_files')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user && !!projectId,
+  });
+}
+
+export function useUploadProjectFile() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ 
+      projectId, 
+      category, 
+      file 
+    }: { 
+      projectId: string; 
+      category: string; 
+      file: File 
+    }) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${user!.id}/${projectId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('project-files')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data, error: dbError } = await supabase
+        .from('project_files')
+        .insert({
+          user_id: user!.id,
+          project_id: projectId,
+          category,
+          name: file.name,
+          file_path: filePath,
+          size: file.size,
+          content_type: file.type,
+        })
+        .select()
+        .single();
+
+      if (dbError) throw dbError;
+      return data;
+    },
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['project_files', v.projectId] });
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+export function useDeleteProjectFile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, projectId, filePath }: { id: string; projectId: string; filePath: string }) => {
+      const { error: storageError } = await supabase.storage
+        .from('project-files')
+        .remove([filePath]);
+
+      if (storageError) throw storageError;
+
+      const { error: dbError } = await supabase
+        .from('project_files')
+        .delete()
+        .eq('id', id);
+
+      if (dbError) throw dbError;
+    },
+    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ['project_files', v.projectId] }),
+  });
+}
+
 /**
  * Cria um projeto a partir de um template, semeando a checklist.
  */
@@ -212,6 +306,9 @@ export async function createProjectFromTemplate(opts: {
       template_id: opts.template.id,
       status: initialStatus,
       start_date: new Date().toISOString().slice(0, 10),
+      file_categories: Array.isArray(opts.template.file_categories) 
+        ? (opts.template.file_categories as string[]) 
+        : [],
     })
     .select()
     .single();

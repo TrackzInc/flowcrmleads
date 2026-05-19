@@ -536,6 +536,50 @@ export type Database = {
           },
         ]
       }
+      project_files: {
+        Row: {
+          category: string
+          content_type: string | null
+          created_at: string
+          file_path: string
+          id: string
+          name: string
+          project_id: string
+          size: number | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          content_type?: string | null
+          created_at?: string
+          file_path: string
+          id?: string
+          name: string
+          project_id: string
+          size?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content_type?: string | null
+          created_at?: string
+          file_path?: string
+          id?: string
+          name?: string
+          project_id?: string
+          size?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_templates: {
         Row: {
           checklist: Json
@@ -585,6 +629,8 @@ export type Database = {
           contact_id: string | null
           created_at: string
           deadline: string | null
+          file_categories: string[] | null
+          file_categories_metadata: Json | null
           id: string
           links: Json
           name: string
@@ -609,6 +655,8 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           deadline?: string | null
+          file_categories?: string[] | null
+          file_categories_metadata?: Json | null
           id?: string
           links?: Json
           name: string
@@ -633,6 +681,8 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           deadline?: string | null
+          file_categories?: string[] | null
+          file_categories_metadata?: Json | null
           id?: string
           links?: Json
           name?: string
