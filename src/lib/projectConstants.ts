@@ -1,3 +1,12 @@
+import { 
+  Monitor, 
+  Layout, 
+  ShoppingCart, 
+  Palette, 
+  Wrench,
+  FileText 
+} from 'lucide-react';
+
 export const PROJECT_STAGES = [
   'aguardando_pagamento',
   'briefing_pendente',
@@ -58,7 +67,25 @@ export const PRIORITY_COLORS: Record<ProjectPriority, string> = {
   urgente: 'bg-red-100 text-red-700',
 };
 
+export const PROJECT_TYPE_LABELS: Record<string, string> = {
+  site: 'Site Institucional',
+  landing: 'Landing Page',
+  ecommerce: 'E-commerce',
+  identidade: 'Identidade Visual',
+  manutencao: 'Manutenção Mensal',
+};
+
+export const PROJECT_TYPE_ICONS: Record<string, any> = {
+  site: Monitor,
+  landing: Layout,
+  ecommerce: ShoppingCart,
+  identidade: Palette,
+  manutencao: Wrench,
+  default: FileText,
+};
+
 export function daysBetween(from: string | Date, to: Date = new Date()) {
   const f = typeof from === 'string' ? new Date(from) : from;
+  if (!f || isNaN(f.getTime())) return 0;
   return Math.floor((to.getTime() - f.getTime()) / 86400000);
 }

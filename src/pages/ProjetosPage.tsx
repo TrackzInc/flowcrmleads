@@ -26,6 +26,8 @@ import {
   PRIORITY_LABELS,
   ProjectPriority,
   daysBetween,
+  PROJECT_TYPE_LABELS,
+  PROJECT_TYPE_ICONS,
 } from '@/lib/projectConstants';
 import { NewProjectDialog } from '@/components/projects/NewProjectDialog';
 import { ProjectDetailDrawer } from '@/components/projects/ProjectDetailDrawer';
@@ -35,6 +37,8 @@ function ProjectCard({ project, onOpen }: { project: Project; onOpen: () => void
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: project.id });
   const overdue = project.deadline && daysBetween(new Date(), new Date(project.deadline)) < 0;
   const stalled = daysBetween(project.stage_changed_at) >= 5;
+  const TypeIcon = PROJECT_TYPE_ICONS[project.project_type as string] || PROJECT_TYPE_ICONS.default;
+  const typeLabel = PROJECT_TYPE_LABELS[project.project_type as string] || 'Projeto';
 
   return (
     <Card
@@ -57,18 +61,24 @@ function ProjectCard({ project, onOpen }: { project: Project; onOpen: () => void
           <p className="text-[11px] text-muted-foreground truncate">{project.company}</p>
         )}
         <Progress value={project.progress ?? 0} className="h-1.5" />
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {daysBetween(project.stage_changed_at)}d na etapa
-          </span>
-          {project.deadline && (
-            <span className={`flex items-center gap-1 ${overdue ? 'text-red-600 font-medium' : ''}`}>
-              {overdue && <AlertCircle className="h-3 w-3" />}
-              <Calendar className="h-3 w-3" />
-              {new Date(project.deadline).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+        <div className="space-y-1">
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+            <TypeIcon className="h-3 w-3" />
+            {typeLabel}
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {daysBetween(project.stage_changed_at)}d na etapa
             </span>
-          )}
+            {project.deadline && (
+              <span className={`flex items-center gap-1 ${overdue ? 'text-red-600 font-medium' : ''}`}>
+                {overdue && <AlertCircle className="h-3 w-3" />}
+                <Calendar className="h-3 w-3" />
+                {new Date(project.deadline).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+              </span>
+            )}
+          </div>
         </div>
         {(project.tags?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1">
