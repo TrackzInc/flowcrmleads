@@ -33,6 +33,10 @@ const items = [
   { title: 'ProspectAi', url: '/prospectai', icon: Database },
 ];
 
+const configItems = [
+  { title: 'Configurações', url: '/configuracoes/templates', icon: Settings },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
